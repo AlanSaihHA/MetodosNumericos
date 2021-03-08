@@ -6,8 +6,9 @@ INTEGER nx,i,m   !nx=numero de volumenes, i=variable de iteracion, m=variable de
 REAL, allocatable:: T(:),Ta(:),aP(:),aE(:),aW(:),sP(:),xc(:),x(:)    !T(:)=Temperatura de puntos P por metodo numerico,Ta(:)=Temperatura de punto P por analitica, aP(:)=coeficiente de P, aE(:)=coeficiente este, aW(:)=coeficeiente oeste, sP(:)=término fuente, xc(:)=centros de volumenes de control, x(:)=caras de volumenes de control
 
 
+
 !Definir el tamaño de malla
-nx=20; x0=0.0; xl=0.02;
+nx=10; x0=0.0; xl=0.02;
 L=xl-x0; dx = L/float(nx)
 
 !Condiciones de frontera
@@ -68,28 +69,33 @@ do i = 1,nx
 enddo
 
 !Solucion de matriz por metodo de Jacobi
-do m = 1,100000
+do m = 1,1000000
 	do i = 1,nx
 	t (i) = (aE(i)*T(i+1) + aW(i)*T(i-1)+sP(i))/aP(i)
 	enddo
 enddo
 
+!Mostrar resultados numericos
 do i = 0,nx+1
 	write(*,*) T(i)
 enddo
 
 !Agregando la solución analítica
 Ta(0) = Tp; Ta(nx+1) = Tf
-do i=1,nx/2
-	Ta(i) = (k1*Tp+k2*Tf)/(k1+k2)+((Tf-Tp)/(L/2))*(k2/(k1+k2))*(xc(i)-(L/2))-(q/2)*(xc(i)-L/2+L/2)*((xc(i)-L/2)/k1-((2*(L/2))/(k1+k2)))
+do i=0,nx/2
+	Ta(i) = (k1*Tp+k2*Tf)/(k1+k2) & 
+	+((Tf-Tp)/(L/2))*(k2/(k1+k2))*(xc(i)-(L/2)) &
+	-(q/2)*(xc(i)-L/2+L/2)*((xc(i)-L/2)/k1-((2*(L/2))/(k1+k2)))
 enddo
 
-do i=nx/2+1,nx
-	Ta(i) = (k1*Tp+k2*Tf)/(k1+k2)+((Tf-Tp)/(L/2))*(k1/(k1+k2))*(xc(i)-(L/2))+(q/2)*(L/2-xc(i)+L/2)*((xc(i)-L/2)/k2+((2*(L/2))/(k1+k2)))
+do i=nx/2+1,nx+1
+	Ta(i) = (k1*Tp+k2*Tf)/(k1+k2) &
+	+((Tf-Tp)/(L/2))*(k1/(k1+k2))*(xc(i)-(L/2)) &
+	+(q/2)*(L/2-(xc(i)-L/2))*((xc(i)-L/2)/k2+((2*(L/2))/(k1+k2)))
 enddo
 
 
-open(1,file='ejemplo1.txt', status='replace')
+open(1,file='problema1-jacobi.txt', status='replace')
 do i=0,nx+1
 	write(1,*) xc(i), T(i), Ta(i)
 enddo
@@ -97,7 +103,7 @@ enddo
 ENDPROGRAM problema1
 
 
-
+!-----------------------------------------------------------
 Subroutine Mesh1D(xc,x,x0,xl,nx)
 integer i,j,nx
 real*4 x0,xl,dx
@@ -116,3 +122,4 @@ xc(i)=(x(i)+x(i-1))*0.5
 end do
 
 End Subroutine
+
