@@ -8,7 +8,7 @@ REAL, allocatable:: T(:),Ta(:),aP(:),aE(:),aW(:),sP(:),xc(:),x(:)    !T(:)=Tempe
 
 
 !Definir el tamaño de malla
-nx=10; x0=0.0; xl=0.02;
+nx=11; x0=0.0; xl=0.02;
 L=xl-x0; dx = L/float(nx)
 
 !Condiciones de frontera
@@ -37,7 +37,7 @@ T(0)=Tp; T(nx+1)=Tf
 Se=1.0; Sw=1.0; Sf=1.0
 
 !Determinando los coeficientes
-do i = 1, nx/2
+do i = 1, nx/2-1
 	aE(i) = k1*Se/dx
 	aW(i) = k1*Sw/dx
 	aP(i) = aE(i) + aW(i)
@@ -50,6 +50,13 @@ do i = nx/2+1, nx
 	aP(i) = aE(i) + aW(i)
 	sP(i) = q*Sf*dx
 enddo
+
+!Corrigiendo union
+aW(nx/2)=k1*Sw/dx
+aE((nx/2)=k2*Se/dx
+Sp(nx/2))=aW(nx/2)+aE((nx/2)
+
+
 
 !Corección de las condiciones a la frontera
 
