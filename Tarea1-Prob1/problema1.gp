@@ -128,7 +128,7 @@ set x2label ""
 set x2label  font "" textcolor lt -1 norotate
 set xrange [ 0.00000 : 0.0200000 ] noreverse writeback
 set x2range [ 0.00000 : 0.0200000 ] noreverse writeback
-set ylabel "T (C)" 
+set ylabel "T [K]" 
 set ylabel  font "" textcolor lt -1 rotate
 set y2label "" 
 set y2label  font "" textcolor lt -1 rotate
@@ -165,6 +165,6 @@ set fontpath
 set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
-## Last datafile plotted: "ejemplo1.txt"
-p 'ejemplo1.txt' u 1:2 w p t 'Sol. numerica','ejemplo1.txt' u 1:3 w l t 'Sol. analitica'
+## Last datafile plotted: "problema1-seidel.txt"
+p 'problema1-seidel.txt' u 1:2 w p t 'Sol. numerica','problema1-seidel.txt' u 1:3 w l t 'Sol. analitica'
 #    EOF

@@ -8,7 +8,7 @@ REAL, allocatable:: T(:),Ta(:),aP(:),aE(:),aW(:),sP(:),xc(:),x(:)    !T(:)=Tempe
 
 
 !Definir el tamaño de malla
-nx=11; x0=0.0; xl=0.02;
+nx=31; x0=0.0; xl=0.02;
 L=xl-x0; dx = L/float(nx)
 
 !Condiciones de frontera
@@ -37,14 +37,14 @@ T(0)=Tp; T(nx+1)=Tf
 Se=1.0; Sw=1.0; Sf=1.0
 
 !Determinando los coeficientes
-do i = 1, nx/2-1
+do i = 1, nx/2
 	aE(i) = k1*Se/dx
 	aW(i) = k1*Sw/dx
 	aP(i) = aE(i) + aW(i)
 	sP(i) = q*Sf*dx
 enddo
 
-do i = nx/2+1, nx
+do i = nx/2+2, nx
 	aE(i) = k2*Se/dx
 	aW(i) = k2*Sw/dx
 	aP(i) = aE(i) + aW(i)
@@ -52,14 +52,13 @@ do i = nx/2+1, nx
 enddo
 
 !Corrigiendo union
-aW(nx/2)=k1*Sw/dx
-aE((nx/2)=k2*Se/dx
-Sp(nx/2))=aW(nx/2)+aE((nx/2)
+aW(nx/2+1)=k1*Sw/dx
+aE(nx/2+1)=k2*Se/dx
+ap(nx/2+1)=aW(nx/2+1)+aE(nx/2+1)
 
 
 
 !Corección de las condiciones a la frontera
-
 !Cara este
 aP(nx) = aP(nx) + aE(nx)
 sP(nx) = sP(nx) + 2.0*aE(nx)*T(nx+1)   !El valor fuente más dos veces el coeficiente de la cara por la temperatura de esa frontera
@@ -82,11 +81,6 @@ do m = 1,1000000
 	enddo
 enddo
 
-!Mostrar resultados numericos
-do i = 0,nx+1
-	write(*,*) T(i)
-enddo
-
 !Agregando la solución analítica
 Ta(0) = Tp; Ta(nx+1) = Tf
 do i=0,nx/2
@@ -106,6 +100,12 @@ open(1,file='problema1-jacobi.txt', status='replace')
 do i=0,nx+1
 	write(1,*) xc(i), T(i), Ta(i)
 enddo
+
+!Mostrar resultados numericos
+do i = 0,nx+1
+	write(*,*) T(i), Ta(i)
+enddo
+
 
 ENDPROGRAM problema1
 

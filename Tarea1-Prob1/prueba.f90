@@ -1,0 +1,10 @@
+PROGRAM PRUEBA
+
+REAL x
+INTEGER n
+
+n=int(14/2)
+
+write(*,*) n
+
+ENDPROGRAM PRUEBA
