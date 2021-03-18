@@ -1,42 +1,68 @@
 Program Laplace 
-  real k,dx,dy,Se,Sw,Sn,Ss,q,dv
+  real k,dx,Se,Sw,Sn,Ss,q,dv,ue,uw,un,us
   real x0,xl,y0,yl,tolerance,residual
   integer nx,i,j,ny,max_iter
-  real, allocatable::T(:,:),Ta(:,:),aP(:,:),aE(:,:),aW(:,:),aS(:,:),aN(:,:),SP(:,:),xc(:),x(:),yc(:),y(:)
+  real pi
+  real, allocatable::T(:,:),aP(:,:),aE(:,:),aW(:,:),aS(:,:),aN(:,:),SP(:,:),xc(:),x(:),yc(:),y(:),uc(:,:),vc(:,:)
 
-  !definiendo el tamaño de la malla
-  !Ocupar mallas siempre de potencia de 2
-  nx=20
-  ny=20
-  x0=-1.0
-  xl=1.0
-  y0=-1.0
-  yl=1.0
-  dx=(xl-x0)/float(nx)
-  dy=(yl-y0)/float(ny)
-  dv=dx*dy
+!Inicialización de variables
+x0 = 0.0; xl = 1.0
+y0 = 0.0; yl = 1.0
 
+nx = 50; ny = 50
+
+Pi = acos(-1.0)
+Pe = 200.0
+gamma = 1.0/Pe
+
+dx = (xl-x0)/float(nx)
+dy = (yl-y0)/float(ny)
+
+Se = dy; Sw = dy
+Sn = dx; Ss = dx
+dv = dx*dy
   !definiendo las constantes
   q=0.
   k=1.0 !es la función gamma, que se lee en  gamma*S/delta
   max_iter=1000
   tolerance= 1e-4
+  
+  pi =acos(-1.0)
 
   !definiendo el tamaño del vector
-  allocate(T(0:nx+1,0:ny+1),Ta(0:nx+1,0:ny+1),aP(nx,ny),aE(nx,ny),aW(nx,ny),aS(nx,ny),aN(nx,ny),SP(nx,ny),xc(0:nx+1),x(0:nx),yc(0:ny+1),y(0:ny))
+  allocate(T(0:nx+1,0:ny+1),aP(nx,ny),aE(nx,ny),aW(nx,ny),aS(nx,ny),aN(nx,ny),SP(nx,ny))
+  allocate(x(0:nx),xc(0:nx+1),y(0:ny),yc(0:ny+1),uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1))
 
   !llamando la rubrutina que genera la malla
   call Mesh1D(xc,x,x0,xl,nx)
   call Mesh1D(yc,y,y0,yl,ny)
-  T=0.
-  !determinado las condiciones de frontera, el manejo de los arreglos es parecido a Matlab
-  T(0,:)=yc(:)-yc(:)**2 + 1
-  T(nx+1,:)=yc(:)+yc(:)**2 + 1
-  T(:,0)=xc(:)-xc(:)**2 + 1
-  T(:,ny+1)=xc(:)+xc(:)**2 + 1
   
+  !Escritura de resultados
+open(1,file="velc-upwind.txt", status="replace")
+
+ !calculando los vectores velocidades
+  do i=0,nx+1
+     do j=0,ny+1
+        uc(i,j)=-sin(pi*xc(i))*cos(pi*yc(j))
+        vc(i,j)=cos(pi*xc(i))*sin(pi*yc(j))
+     enddo
+  enddo
+
+do i = 0,nx+1  
+do j=0,ny+1
+	write(1,*)xc(i),yc(j),uc(i,j),vc(i,j)
+end do
+end do
+close(1)
+
   !precolocando los vectores
-  aP=0.;aE=0.;aW=0.; aS=0.; aN=0.; SP=0.
+  aP=0.;aE=0.;aW=0.; aS=0.; aN=0.; SP=0.; T=0.
+  
+!Condiciones de frontera
+	!norte
+	T(:,ny+1) = 1.0
+	!sur
+	T(:,0) = 0.0
 
   !definiendo las áreas
   Se=dy; Sw=dy; Sn=dx; Ss=dx
@@ -44,68 +70,48 @@ Program Laplace
   !determinando los coeficientes 
   do i=1,ny
      do j=1,nx
-        aE(i,j)=k*Se/dx
-        aW(i,j)=k*Sw/dx
-        aN(i,j)=k*Ss/dy
-        aS(i,j)=k*Sn/dy       
-        SP(i,j)=(2*xc(i) + 2*yc(j))*dv !En este caso dv=dx*dy
-        aP(i,j)=aE(i,j) + aW(i,j) +  aN(i,j) +  aS(i,j)
+		uw = 0.5*(uc(i,j) + uc(i-1,j))
+		ue = 0.5*(uc(i,j) + uc(i+1,j))
+		un = 0.5*(vc(i,j) + vc(i,j+1))
+		us = 0.5*(vc(i,j) + vc(i,j-1))
+		
+		aE(i,j) = gamma*Se/dx - min(ue*Se,0.0)
+		aW(i,j) = gamma*Sw/dx + max(uw*Sw,0.0)
+		aN(i,j) = gamma*Sn/dy - min(un*Sn,0.0)
+		aS(i,j) = gamma*Ss/dy + max(us*Ss,0.0)
+		
+		aP(i,j) = aE(i,j) + aW(i,j) + aN(i,j) + aS(i,j)
+		Sp(i,j) = 0.0  !Termino fuente es cero no especificado en notas
      enddo    
   enddo
   
 
   !corrección de las condiciones de frontera
   
-  !Cara Este
-  SP(nx,:)=SP(nx,:)+ 2.0*aE(nx,:)*T(nx+1,1:ny)
-  aP(nx,:)=aP(nx,:)+aE(nx,:)
-  aE(nx,:)=0.0
-
-  !Cara Oeste
-  SP(1,:)=SP(1,:)+2.0*aW(1,:)*T(0,1:ny)
-  aP(1,:)=aP(1,:)+aW(1,:)
-  aW(1,:)=0.0
-
-  !Cara Norte
-  SP(:,ny)=SP(:,ny)+ 2.0*aN(:,ny)*T(1:nx,ny+1)
-  aP(:,ny)=aP(:,ny)+aN(:,ny)
-  aN(:,ny)=0.0
-  
-  !Cara Sur
-  SP(:,1)=SP(:,1)+ 2.0*aS(:,1)*T(1:nx,0)
-  aP(:,1)=aP(:,1)+aS(:,1)
-  aS(:,1)=0.0
+!Correción de condiciones de frontera
+	!Este
+	aP(nx,1:ny) = aP(nx,1:ny) - aE(nx,1:ny)
+	aE(nx,1:ny) = 0.0
+	!Oeste
+	aP(1,1:ny) = aP(1,1:ny) - aW(1,1:ny)
+	aW(1,1:ny) = 0.0
+	
+	!Norte
+	aP(1:nx,ny) = aP(1:nx,ny) + aN(1:nx,ny)
+	sP(1:nx,ny) = sP(1:nx,ny) + 2.0*aN(1:nx,ny)*T(1:nx,ny+1)
+	aN(1:nx,ny) = 0.0
+	!Sur
+	aP(1:nx,1) = aP(1:nx,1) + aS(1:nx,1)
+	sP(1:nx,1) = sP(1:nx,1) + 2.0*aS(1:nx,1)*T(1:nx,0)
+	aS(1:nx,1) = 0.0
 
   !Para optimizar los códigos, una propuesta de saul fue asistir a un curso de ciencias computacionales
 
   !Gauss TDMA2D para un arreglo [A]{T}={S} 
   call Gauss_TDMA2D(T,nx,ny,aP,aE,aW,aN,aS,sP,nx,ny,max_iter,tolerance,residual)
 
-  call  WriteScalarField2D('Temp2D',0,T,xc,yc,nx,ny)
+  call  WriteScalarField2D('Temp2D-upwind',0,T,xc,yc,nx,ny)
   
-  
-  !!Solución analitica
-!!$  Ta(0)=Th
-!!$  Ta(nx+1)=Tc
-!!$
-!!$  do i=1,nx
-!!$     a=(Tc-Th)/(k2+k1)
-!!$     if (xc(i).GE.xc(int(nx/2)+1)) then
-!!$        Ta(i)=Tc + k1*a*(k1*xc(i)-1)        
-!!$     else
-!!$        Ta(i)=Tc + a*(k2*xc(i)-k1)
-!!$     end if          
-!!$  enddo
-  
-  !Imprimir solución numérica y análitica en un documento
-!!$  do j=0,ny+1
-!!$     do i=1,nx+1
-!!$    ! x=(float(i)-0.5)*dx
-!!$     write(2,*)xc(i),yc(j),T(i,j) !,Ta(i) !crea y genera un archivo sin necesidad de crearlo antes con el codigo open
-!!$  enddo
-!!$enddo
-!!$  call exit
-
 endProgram Laplace
 
 !!****************************************************************************************************************
@@ -249,7 +255,7 @@ open(10,file=Filename(1:len_trim(Filename)))
 	do i=0,nx+1
 	write(10,*)xc(i),yc(j),T(i,j)
 	end do
-	write(10,*)''
+		write(10,*)''
 	end do
 close(10)
 End Subroutine
