@@ -145,6 +145,34 @@ close(1)
 
   call  WriteScalarField2D('Temp2D-quick',0,T,xc,yc,nx,ny)
   
+
+!archivo paraview variable escalar
+open(3,file='data-quick-esc.dat')                !Aquì se nombre el archivo en donde se escribiran los datos
+write(3,*) 'TITLE= "TESTPLOT" '
+write(3,*) 'VARIABLES="x","y","T"'              !Se dan coordenadas x,y, ademas la componente fx y fy. Ademas la magnitu de esas componentes
+write(3,*) 'ZONE T="1", I=',nx+1,', J=',ny+1
+
+do j=0, ny              !Se evalua para cada coordenada (x,y). Primerotodas las equis con cada ye. Se pasa a la siguiente equis y se vuelve a repetir
+do i=0, nx 
+	write(3,*) xc(i), yc(j), T(i,j)          !Evaluacion de cada dato
+enddo 
+enddo
+close(3)
+  
+!archivo paraview variable velocidad
+open(4,file='data-quick-vec.dat')                !Aquì se nombre el archivo en donde se escribiran los datos
+write(4,*) 'TITLE= "TESTPLOT" '
+write(4,*) 'VARIABLES="x","y","fx","fy","magf" '              !Se dan coordenadas x,y, ademas la componente fx y fy. Ademas la magnitu de esas componentes
+write(4,*) 'ZONE T="1", I=',nx+1,', J=',ny+1
+
+do j=0, ny              !Se evalua para cada coordenada (x,y). Primerotodas las equis con cada ye. Se pasa a la siguiente equis y se vuelve a repetir
+do i=0, nx 
+	write(4,*) xc(i), yc(j), uc(i,j), vc(i,j)        !Evaluacion de cada dato
+enddo 
+enddo
+close(4)
+  
+  
 endProgram Laplace
 
 !!****************************************************************************************************************
