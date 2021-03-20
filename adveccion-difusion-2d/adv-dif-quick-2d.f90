@@ -3,8 +3,8 @@ Program Laplace
   real x0,xl,y0,yl,tolerance,residual
   integer nx,i,j,ny,max_iter
   real pi
-  real, allocatable::T(:,:),aP(:,:),aE(:,:),aW(:,:),aS(:,:),aN(:,:),SP(:,:),xc(:),x(:),yc(:),y(:),uc(:,:),vc(:,:),aWW(:,:),aSS(:,:)
-
+  real, allocatable::T(:,:),aP(:,:),aE(:,:),aW(:,:),aS(:,:),aN(:,:),SP(:,:),xc(:),x(:),yc(:),y(:),uc(:,:),vc(:,:)
+  real, allocatable:: aWW(:,:),aSS(:,:),aEE(:,:),aNN(:,:)
 !Inicialización de variables
 x0 = 0.0; xl = 1.0
 y0 = 0.0; yl = 1.0
@@ -12,7 +12,7 @@ y0 = 0.0; yl = 1.0
 nx = 50; ny = 50
 
 Pi = acos(-1.0)
-Pe = 200.0
+Pe = 10.0
 gamma = 1.0/Pe
 
 dx = (xl-x0)/float(nx)
@@ -30,7 +30,8 @@ dv = dx*dy
   pi =acos(-1.0)
 
   !definiendo el tamaño del vector
-  allocate(T(0:nx+1,0:ny+1),aP(nx,ny),aE(nx,ny),aW(nx,ny),aS(nx,ny),aN(nx,ny), aWW(nx,ny), aSS(nx,ny), SP(nx,ny))
+  allocate(T(0:nx+1,0:ny+1),aP(nx,ny),aE(nx,ny),aW(nx,ny),aS(nx,ny),aN(nx,ny),SP(nx,ny))
+  allocate(aWW(nx,ny), aSS(nx,ny),aEE(nx,ny),aNN(nx,ny))
   allocate(x(0:nx),xc(0:nx+1),y(0:ny),yc(0:ny+1),uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1))
 
   !llamando la rubrutina que genera la malla
@@ -56,7 +57,7 @@ end do
 close(1)
 
   !precolocando los vectores
-  aP=0.;aE=0.;aW=0.; aS=0.; aN=0.; aWW=0.; aSS=0.; SP=0.; T=0.
+  aP=0.;aE=0.;aW=0.; aS=0.; aN=0.; aWW=0.; aSS=0.; aEE=0.; aNN=0.; SP=0.; T=0.
   
 !Condiciones de frontera
 	!norte
@@ -75,20 +76,40 @@ close(1)
 		un = 0.5*(vc(i,j) + vc(i,j+1))
 		us = 0.5*(vc(i,j) + vc(i,j-1))
 		
-		aE(i,j) = gamma*Se/dx - (3/8)*ue
-		aW(i,j) = gamma*Sw/dx + (1/8)*ue + (6/8)*uw
-		aN(i,j) = gamma*Sn/dy - (3/8)*un
-		aS(i,j) = gamma*Ss/dy + (1/8)*un + (6/8)*us
-		aWW(i,j)= gamma*Sw/dx -(1/8)*uw
-		aSS(i,j)= gamma*Ss/dy -(1/8)*us
+		if (uw .gt. 0.0) then
+			 aW(i,j) = gamma*Sw/dx + (1.0/8.0)*ue + (6.0/8.0)*uw
+			 aWW(i,j) = -(1.0/8.0)*uw
+		else 
+			 aW(i,j) = gamma*Sw/dx + (3.0/8.0)*uw
+		end if
 		
-		aP(i,j) = aE(i,j) + aW(i,j) + aN(i,j) + aS(i,j) +aWW(i,j) + aSS(i,j)
+		if (ue .gt. 0.0) then
+			 aE(i,j) = gamma*Se/dx - (3.0/8.0)*ue
+		else 
+			 aE(i,j) = gamma*Se/dx - (6.0/8.0)*ue -(1.0/8.0)*uw
+			 aEE(i,j) = (1.0/8.0)*ue
+		end if
+		
+		if (us .gt. 0.0) then
+			 aS(i,j) = gamma*Ss/dx + (1.0/8.0)*un + (6.0/8.0)*us
+			 aSS(i,j) = - (1.0/8.0)*us
+		else 
+			 aS(i,j) = gamma*Ss/dx + (3.0/8.0)*us
+		end if
+		
+		if (un .gt. 0.0) then
+			 aN(i,j) = gamma*Sn/dx - (3.0/8.0)*un
+		else 
+			 aN(i,j) = gamma*Sn/dx - (6.0/8.0)*un -(1.0/8.0)*us
+			 aNN(i,j) = (1.0/8.0)*un
+		end if
+		
+		write(*,*) i,j,uw,aWW(i,j)
+		aP(i,j) = aE(i,j) + aW(i,j) + aN(i,j) + aS(i,j) +aWW(i,j) + aSS(i,j) + aEE(i,j) + aNN(i,j)
 		Sp(i,j) = 0.0  !Termino fuente es cero no especificado en notas
      enddo    
   enddo
   
-
-  !corrección de las condiciones de frontera
   
 !Correción de condiciones de frontera
 	!Este
@@ -108,11 +129,41 @@ close(1)
 	aS(1:nx,1) = 0.0
 
   !Para optimizar los códigos, una propuesta de saul fue asistir a un curso de ciencias computacionales
+  
+ 
 
   !Gauss TDMA2D para un arreglo [A]{T}={S} 
   call Gauss_TDMA2D(T,nx,ny,aP,aE,aW,aN,aS,sP,nx,ny,max_iter,tolerance,residual)
 
   call  WriteScalarField2D('Temp2D-quick',0,T,xc,yc,nx,ny)
+  
+
+!archivo paraview variable escalar
+open(3,file='data-quick-esc.dat')                !Aquì se nombre el archivo en donde se escribiran los datos
+write(3,*) 'TITLE= "TESTPLOT" '
+write(3,*) 'VARIABLES="x","y","T"'              !Se dan coordenadas x,y, ademas la componente fx y fy. Ademas la magnitu de esas componentes
+write(3,*) 'ZONE T="1", I=',nx+1,', J=',ny+1
+
+do j=0, ny              !Se evalua para cada coordenada (x,y). Primerotodas las equis con cada ye. Se pasa a la siguiente equis y se vuelve a repetir
+do i=0, nx 
+	write(3,*) xc(i), yc(j), T(i,j)          !Evaluacion de cada dato
+enddo 
+enddo
+close(3)
+  
+!archivo paraview variable velocidad
+open(4,file='data-quick-vec.dat')                !Aquì se nombre el archivo en donde se escribiran los datos
+write(4,*) 'TITLE= "TESTPLOT" '
+write(4,*) 'VARIABLES="x","y","fx","fy","magf" '              !Se dan coordenadas x,y, ademas la componente fx y fy. Ademas la magnitu de esas componentes
+write(4,*) 'ZONE T="1", I=',nx+1,', J=',ny+1
+
+do j=0, ny              !Se evalua para cada coordenada (x,y). Primerotodas las equis con cada ye. Se pasa a la siguiente equis y se vuelve a repetir
+do i=0, nx 
+	write(4,*) xc(i), yc(j), uc(i,j), vc(i,j), sqrt(uc(i,j)*uc(i,j)+vc(i,j)*vc(i,j))       !Evaluacion de cada dato
+enddo 
+enddo
+close(4)
+  
   
 endProgram Laplace
 
