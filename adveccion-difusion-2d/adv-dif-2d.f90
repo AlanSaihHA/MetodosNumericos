@@ -4,7 +4,7 @@ Program Laplace
   integer nx,i,j,ny,max_iter
   real pi
   real, allocatable::T(:,:),aP(:,:),aE(:,:),aW(:,:),aS(:,:),aN(:,:),SP(:,:),xc(:),x(:),yc(:),y(:),uc(:,:),vc(:,:)
-
+  real, allocatable :: H(:,:)
 !Inicialización de variables
 x0 = 0.0; xl = 1.0
 y0 = 0.0; yl = 1.0
@@ -32,7 +32,7 @@ dv = dx*dy
   !definiendo el tamaño del vector
   allocate(T(0:nx+1,0:ny+1),aP(nx,ny),aE(nx,ny),aW(nx,ny),aS(nx,ny),aN(nx,ny),SP(nx,ny))
   allocate(x(0:nx),xc(0:nx+1),y(0:ny),yc(0:ny+1),uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1))
-
+  allocate(H(0:nx+1,0:ny+1))
   !llamando la rubrutina que genera la malla
   call Mesh1D(xc,x,x0,xl,nx)
   call Mesh1D(yc,y,y0,yl,ny)
@@ -106,6 +106,26 @@ close(1)
 	aS(1:nx,1) = 0.0
 
   !Para optimizar los códigos, una propuesta de saul fue asistir a un curso de ciencias computacionales
+
+
+!Esta parte corresponde al método por Jacobi
+!count_iter=0
+!residual=1.0
+!H=0.0
+!do while ((count_iter <= max_iter).and.(residual > tolerance))  
+!do m =1, 1000000
+!	do i = 1,nx
+!		do j = 1,ny
+!			H(i,j) = (aE(i,j)*T(i+1,j) + aW(i,j)*T(i-1,j) &
+!			+ aN(i,j)*T(i,j+1) + aS(i,j)*T(i,j-1) + sP(i,j))/aP(i,j)
+!		enddo
+!	enddo
+!	T=H
+ !       residual = calcResidual(T,nx,ny,aP,aE,aW,aN,aS,sP,nx,ny)
+!	count_iter=count_iter+1
+!	write(*,*) count_iter
+!enddo 
+
 
   !Gauss TDMA2D para un arreglo [A]{T}={S} 
   call Gauss_TDMA2D(T,nx,ny,aP,aE,aW,aN,aS,sP,nx,ny,max_iter,tolerance,residual)

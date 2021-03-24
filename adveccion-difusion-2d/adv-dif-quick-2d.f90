@@ -1,10 +1,11 @@
 Program Laplace 
   real k,dx,Se,Sw,Sn,Ss,q,dv,ue,uw,un,us
   real x0,xl,y0,yl,tolerance,residual
-  integer nx,i,j,ny,max_iter
+  integer nx,i,j,ny,max_iter,m
   real pi
   real, allocatable::T(:,:),aP(:,:),aE(:,:),aW(:,:),aS(:,:),aN(:,:),SP(:,:),xc(:),x(:),yc(:),y(:),uc(:,:),vc(:,:)
   real, allocatable:: aWW(:,:),aSS(:,:),aEE(:,:),aNN(:,:)
+  real, allocatable :: H(:,:)
 !Inicialización de variables
 x0 = 0.0; xl = 1.0
 y0 = 0.0; yl = 1.0
@@ -12,7 +13,7 @@ y0 = 0.0; yl = 1.0
 nx = 50; ny = 50
 
 Pi = acos(-1.0)
-Pe = 10.0
+Pe = 200.0
 gamma = 1.0/Pe
 
 dx = (xl-x0)/float(nx)
@@ -33,7 +34,7 @@ dv = dx*dy
   allocate(T(0:nx+1,0:ny+1),aP(nx,ny),aE(nx,ny),aW(nx,ny),aS(nx,ny),aN(nx,ny),SP(nx,ny))
   allocate(aWW(nx,ny), aSS(nx,ny),aEE(nx,ny),aNN(nx,ny))
   allocate(x(0:nx),xc(0:nx+1),y(0:ny),yc(0:ny+1),uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1))
-
+  allocate(H(0:nx+1,0:ny+1))
   !llamando la rubrutina que genera la malla
   call Mesh1D(xc,x,x0,xl,nx)
   call Mesh1D(yc,y,y0,yl,ny)
@@ -103,9 +104,9 @@ close(1)
 			 aN(i,j) = gamma*Sn/dx - (6.0/8.0)*un -(1.0/8.0)*us
 			 aNN(i,j) = (1.0/8.0)*un
 		end if
-		
-		write(*,*) i,j,uw,aWW(i,j)
-		aP(i,j) = aE(i,j) + aW(i,j) + aN(i,j) + aS(i,j) +aWW(i,j) + aSS(i,j) + aEE(i,j) + aNN(i,j)
+
+		aP(i,j) = aE(i,j) + aW(i,j) + aN(i,j) + aS(i,j) &
+			+ aWW(i,j) + aSS(i,j) + aEE(i,j) + aNN(i,j)
 		Sp(i,j) = 0.0  !Termino fuente es cero no especificado en notas
      enddo    
   enddo
@@ -115,25 +116,46 @@ close(1)
 	!Este
 	aP(nx,1:ny) = aP(nx,1:ny) - aE(nx,1:ny)
 	aE(nx,1:ny) = 0.0
+	aEE(nx,1:ny)=0.0
 	!Oeste
 	aP(1,1:ny) = aP(1,1:ny) - aW(1,1:ny)
 	aW(1,1:ny) = 0.0
-	
+	aWW(1,1:ny) = 0.0
 	!Norte
 	aP(1:nx,ny) = aP(1:nx,ny) + aN(1:nx,ny)
 	sP(1:nx,ny) = sP(1:nx,ny) + 2.0*aN(1:nx,ny)*T(1:nx,ny+1)
 	aN(1:nx,ny) = 0.0
+	aNN(1,1:ny) = 0.0
 	!Sur
 	aP(1:nx,1) = aP(1:nx,1) + aS(1:nx,1)
 	sP(1:nx,1) = sP(1:nx,1) + 2.0*aS(1:nx,1)*T(1:nx,0)
 	aS(1:nx,1) = 0.0
+	aSS(1,1:ny) = 0.0
 
   !Para optimizar los códigos, una propuesta de saul fue asistir a un curso de ciencias computacionales
-  
- 
 
-  !Gauss TDMA2D para un arreglo [A]{T}={S} 
-  call Gauss_TDMA2D(T,nx,ny,aP,aE,aW,aN,aS,sP,nx,ny,max_iter,tolerance,residual)
+!Esta parte corresponde al método por Jacobi
+count_iter=0
+residual=1.0
+H=0.0
+do while ((count_iter <= max_iter).and.(residual > tolerance))  
+	do j = 1,ny
+		do i = 1,nx
+			H(i,j) = (aE(i,j)*T(i+1,j) + aW(i,j)*T(i-1,j) &
+			+ aN(i,j)*T(i,j+1) + aS(i,j)*T(i,j-1) &
+			+ aWW(i,j)*T(i-2,j) + aEE(i,j)*T(i+2,j) &
+ 		        + aSS(i,j)*T(i,j-2) + aNN(i,j)*T(i,j+2) + sP(i,j))/aP(i,j)
+		enddo
+	enddo
+	T=H
+       residual = calcResidual(T,nx,ny,aP,aE,aW,aN,aS,sP,nx,ny)
+	count_iter=count_iter+1
+	write(*,*) count_iter
+enddo 	
+ 
+ 
+  !Gauss TDMA2D para un arreglo [A]{T}={S}  
+  !call Gauss_TDMA2D(T,nx,ny,aP,aE,aW,aN,aS,sP,nx,ny,max_iter,tolerance,residual)
 
   call  WriteScalarField2D('Temp2D-quick',0,T,xc,yc,nx,ny)
   
