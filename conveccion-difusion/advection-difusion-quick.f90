@@ -7,11 +7,11 @@ REAL, allocatable:: T(:),Ta(:),aP(:),aE(:),aW(:),aWW(:),aEE(:) ,sP(:),xc(:),x(:)
 
 
 !Definir el tamaño de malla
-nx=25; x0=0.0; xl=1;
+nx=5; x0=0.0; xl=1;
 L=xl-x0; dx = L/float(nx)
 
 !Definiedo constantees
-u=2.5; uw=2.5; ue=2.5; T0=1.0; T1=0.0; gama=0.1; rho=1.0
+u=0.2; uw=0.2; ue=0.2; T0=1.0; T1=0.0; gama=0.1; rho=1.0
 
 !Definiendo el tamaño de los arreglos
 allocate(T(0:nx+1),Ta(0:nx+1),aP(nx),aE(nx),aW(nx),aWW(nx),aEE(nx) ,sP(nx),xc(0:nx+1),x(0:nx))
@@ -31,7 +31,7 @@ Se=1.0; Sw=1.0
 !Determinando los coeficientes (Esquema Upwind)
 do i = 1, nx
 		if (uw .gt. 0.0) then
-			 aW(i) = gama*Sw/dx + (1.0/8.0)*ue + (6.0/8.0)*uw
+			 aW(i) = gama*Sw/dx + (1.0/8.0)*ue + (6.0/8.0)*uw !
 			 aWW(i) = -(1.0/8.0)*uw
 		else 
 			 aW(i) = gama*Sw/dx + (3.0/8.0)*uw
@@ -51,17 +51,17 @@ enddo
 !Corección de las condiciones a la frontera
 
 !Cara oeste
-aP(1) = gama*Se/dx + 3.0*gama*Sw/dx + (7.0/8.0)*ue
-aE(1) = gama*Se/dx + (1.0/3.0)*gama*Sw/dx - (3.0/8.0)*ue
-sP(1) = ((8.0/3.0)*gama*Sw/dx + (2.0/8.0)*ue + uw)*T(0)
+aP(1) = gama*Se/dx + 3.0*gama*Sw/dx + (7.0/8.0)*ue        !
+aE(1) = gama*Se/dx + (1.0/3.0)*gama*Sw/dx - (3.0/8.0)*ue  !
+sP(1) = ((8.0/3.0)*gama*Sw/dx + (2.0/8.0)*ue + uw)*T(0)    !
 aW(1) = 0.0
 aWW(1) = 0.0
 aEE(1) = 0.0
 
 !Cara este
 aP(nx) = 3.0*gama*Se/dx + gama*Sw/dx - (3.0/8.0)*uw
-aW(nx) = (6.0/8.0)*uw + gama*Sw/dx - (1.0/3.0)*gama*Se/dx 
-aWW(nx) = - (1.0/8.0)*uw
+aW(nx) = (6.0/8.0)*uw + gama*Sw/dx + (1.0/3.0)*gama*Se/dx 
+aWW(nx) = - (1.0/8.0)*uw                                     !
 sP(nx) = ((8.0/3.0)*gama*Se/dx-ue)*T(nx+1)
 aE(nx) = 0.0
 aEE(nx) = 0.0
