@@ -1,0 +1,41 @@
+ set xrange[0:10.0];set yrange[0:1.0]; set view map; set size square
+ sp "Temp2D100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2000.txt" w pm3d
+ pause 0.5

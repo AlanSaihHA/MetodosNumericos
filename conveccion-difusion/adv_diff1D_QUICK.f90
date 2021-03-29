@@ -6,7 +6,7 @@ real*4, allocatable::T(:),Ta(:),aP(:),aW(:),aWW(:),aE(:),Sp(:),xc(:),x(:)
 
 !Inicialización
 
-nx=5; x0=0.0; xl=1;
+nx=25; x0=0.0; xl=1;
 L = xl-x0; dx = L /float(nx)
 
 u = 0.2;T0 = 1.0; T1 = 0.0;gama = 0.1;rho=1.0
