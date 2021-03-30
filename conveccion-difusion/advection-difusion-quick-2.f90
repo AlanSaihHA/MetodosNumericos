@@ -11,7 +11,7 @@ nx=25; x0=0.0; xl=1;
 L=xl-x0; dx = L/float(nx)
 
 !Definiedo constantees
-u=0.2; uw=0.2; ue=0.2; T0=0.0; T1=1.0; gama=0.1; rho=1.0
+u=0.2; uw=0.2; ue=0.2; T0=1.0; T1=0.0; gama=0.1; rho=1.0
 
 !Definiendo el tamaño de los arreglos
 allocate(T(0:nx+1),Ta(0:nx+1),aP(nx),aE(nx),aW(nx),aWW(nx),aEE(nx) ,sP(nx),xc(0:nx+1),x(0:nx))
