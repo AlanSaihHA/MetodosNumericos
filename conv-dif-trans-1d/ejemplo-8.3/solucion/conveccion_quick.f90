@@ -53,12 +53,14 @@ Program Laplace
   !determinando los coeficientes y agregando el paso temporal
 do it=1,itmax
 	do i = 1, nx
-	
-		if (xc(i)<=0.6) then
-			f = (-200.*xc(i)+100.)*dv
-		elseif(xc(i)>0.6 .and. xc(i)<=0.82) then
-			f = (100.*xc(i)-80.)*dv
-		endif
+		
+		    if (xc(i)<=0.6) then
+    			f = (-200.*xc(i)+100.)*dv
+    		    elseif(xc(i)>0.6 .and. xc(i)<=0.82) then
+     			f = (100.*xc(i)-80.)*dv
+     		    endif
+				
+		
 
 		if (uw .gt. 0.0 .and. ue .gt. 0.0) then
 			 alfaw=1.0 ; alfae=1.0

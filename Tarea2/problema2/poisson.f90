@@ -7,8 +7,8 @@ Program Laplace
 
   !definiendo el tamaño de la malla
   !Ocupar mallas siempre de potencia de 2
-  nx=20
-  ny=20
+  nx=60
+  ny=60
   x0=0.0
   xl=1.0
   y0=0.0
@@ -33,7 +33,7 @@ Program Laplace
   U=0.
   !determinado las condiciones de frontera y generacion, el manejo de los arreglos es parecido a Matlab.
 
-  U(:,0)=cos(4*xc(:))
+  U(:,0)=cos(4.*xc(:))
   U(0,:)=0.0
   U(:,ny+1)=0.0
   U(nx+1,:)=0.0
@@ -51,19 +51,19 @@ Program Laplace
         aW(i,j)=k*Sw/dx
         aN(i,j)=k*Ss/dy
         aS(i,j)=k*Sn/dy       
-        SP(i,j)=52.0*cos(4.*xc(i) + 6.*yc(j))
+        SP(i,j)=52.0*cos(4.*xc(i) + 6.*yc(j))*dv
         aP(i,j)=aE(i,j) + aW(i,j) +  aN(i,j) +  aS(i,j)
      enddo    
   enddo
   
 
   !corrección de las condiciones de frontera
-  !Cara Este
+  !Cara Este    !
   SP(nx,:)=SP(nx,:)+ aE(nx,:)*dx*(-4.*sin(4. + 6.*yc(:)))
   aP(nx,:)=aP(nx,:)-aE(nx,:)
   aE(nx,:)=0.0
 
-  !Cara Oeste
+  !Cara Oeste   !
   SP(1,:)=SP(1,:)-aW(1,:)*dx*(-4.*sin(6.*yc(:)))
   aP(1,:)=aP(1,:)-aW(1,:)
   aW(1,:)=0.0
@@ -73,7 +73,7 @@ Program Laplace
   aP(:,ny)=aP(:,ny)-aN(:,ny)*((1./(6.*dy))-(1./2.))/((1./(6.*dy))+(1./2.))
   aN(:,ny)=0.0
   
-  !Cara Sur
+  !Cara Sur   !
   SP(:,1)=SP(:,1)+ 2.0*aS(:,1)*U(1:nx,0)
   aP(:,1)=aP(:,1)+aS(:,1)
   aS(:,1)=0.0
@@ -94,6 +94,7 @@ Program Laplace
   call  WriteScalarField2D('Temp2D-num',0,U,xc,yc,nx,ny)
   
 
+!Solución analitica
 do j=0, ny+1
 	do i=0, nx+1
 		Ua(i,j)=cos(4.*x(i)+6.*yc(i))
@@ -101,19 +102,10 @@ do j=0, ny+1
 enddo
 
   call  WriteScalarField2D('Temp2D-ana',0,Ua,xc,yc,nx,ny) 
-  !!Solución analitica
-!!$  Ta(0)=Th
-!!$  Ta(nx+1)=Tc
-!!$
-!!$  do i=1,nx
-!!$     a=(Tc-Th)/(k2+k1)
-!!$     if (xc(i).GE.xc(int(nx/2)+1)) then
-!!$        Ta(i)=Tc + k1*a*(k1*xc(i)-1)        
-!!$     else
-!!$        Ta(i)=Tc + a*(k2*xc(i)-k1)
-!!$     end if          
-!!$  enddo
-  
+
+
+
+
   !Imprimir solución numérica y análitica en un documento
 !!$  do j=0,ny+1
 !!$     do i=1,nx+1

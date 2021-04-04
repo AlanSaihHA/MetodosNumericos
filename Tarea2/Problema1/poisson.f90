@@ -6,8 +6,8 @@ Program Laplace
 
   !definiendo el tamaño de la malla
   !Ocupar mallas siempre de potencia de 2
-  nx=20
-  ny=20
+  nx=40
+  ny=40
   x0=0.0
   xl=1.0
   y0=0.0

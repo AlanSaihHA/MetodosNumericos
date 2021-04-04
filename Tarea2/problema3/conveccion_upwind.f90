@@ -24,7 +24,7 @@ Program Laplace
   time=10.0
   dt=0.005
   itmax=int(time/dt)+1
-  Pe=100.0
+  Pe=1.0
   k=1.0/Pe !es la función gamma, que se lee en  gamma*S/delta
   max_iter=1000
   tolerance= 1e-4
@@ -61,7 +61,7 @@ Program Laplace
   !creación del archivo de animación
   open(2, file='anim.gnp',status='replace')
   write(2,*)'set xrange[0:10.0];set yrange[0:1.0]; set view map; set size square'
-  write(2,*)'set contour base; unset key; unset surface'
+  write(2,*) 'set contour base; unset key; unset surface'
 
   
   !determinando los coeficientes y agregando el paso temporal

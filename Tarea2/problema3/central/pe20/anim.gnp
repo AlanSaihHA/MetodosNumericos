@@ -1,0 +1,78 @@
+ set xrange[0:10.0];set yrange[0:1.0]; set view map; set size square
+ set contour base; unset key; unset surface
+ sp "Temp2D0.txt" w pm3d
+ pause 0.5
+ sp "Temp2D100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3700.txt" w pm3d
+ pause 0.5

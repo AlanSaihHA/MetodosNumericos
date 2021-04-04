@@ -1,0 +1,202 @@
+ set xrange[0:10.0];set yrange[0:1.0]; set view map; set size square
+ set contour base; unset key; unset surface
+ sp "Temp2D0.txt" w pm3d
+ pause 0.5
+ sp "Temp2D100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D1900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D2900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D3900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D4900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D5900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D6900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D7900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D8900.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9000.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9100.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9200.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9300.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9400.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9500.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9600.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9700.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9800.txt" w pm3d
+ pause 0.5
+ sp "Temp2D9900.txt" w pm3d
+ pause 0.5
