@@ -2,6 +2,7 @@
 set xlabel 'xc'
 set ylabel 'yc'
 set zlabel 'U'
+set view map
 set title 'Problema 2 - Sol- analitica'
 sp 'Temp2D-ana0.txt' w pm3d
 unset key

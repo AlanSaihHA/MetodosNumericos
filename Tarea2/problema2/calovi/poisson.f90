@@ -57,35 +57,63 @@ Program Laplace
   enddo
   
 
-  !corrección de las condiciones de frontera
-  !Cara Este    !
-  SP(nx,:)=SP(nx,:)+ aE(nx,:)*dx*(-4.*sin(4. + 6.*yc(:)))
-  aP(nx,:)=aP(nx,:)-aE(nx,:)
-  aE(nx,:)=0.0
+!   !corrección de las condiciones de frontera
+!   !Cara Este    !
+!   SP(nx,:)=SP(nx,:)+ aE(nx,:)*dx*(-4.*sin(4. + 6.*yc(:)))
+!   aP(nx,:)=aP(nx,:)-aE(nx,:)
+!   aE(nx,:)=0.0
+! 
+!   !Cara Oeste   !
+!   SP(1,:)=SP(1,:)-aW(1,:)*dx*(-4.*sin(6.*yc(:)))
+!   aP(1,:)=aP(1,:)-aW(1,:)
+!   aW(1,:)=0.0
 
-  !Cara Oeste   !
-  SP(1,:)=SP(1,:)-aW(1,:)*dx*(-4.*sin(6.*yc(:)))
-  aP(1,:)=aP(1,:)-aW(1,:)
-  aW(1,:)=0.0
-
+! corrección calovi
+	!este
+aP(nx,:) = aP(nx,:) - aE(nx,:)
+sP(nx,:) = sP(nx,:) - 4.0*dx*aE(nx,:)*sin(4.0 + 6.0*yc(:))
+aE(nx,:) = 0.0
+	!oeste
+aP(1,:) = aP(1,:) - aW(1,:)
+sP(1,:) = sP(1,:) + 4.0*sin(6.0*yc(:))*aW(1,:)*dx
+aw(1,:) = 0.0
   !Cara Norte
-  sP(:,ny)=sP(:,ny)+aN(:,ny)+(1./(1./(6.*dy)+(1./2.)))*cos(4.*xc(:) + 6.)-sin(4.*xc(:) + 6.)
-  aP(:,ny)=aP(:,ny)-aN(:,ny)*((1./(6.*dy))-(1./2.))/((1./(6.*dy))+(1./2.))
-  aN(:,ny)=0.0
+!   sP(:,ny)=sP(:,ny)+aN(:,ny)+(1./(1./(6.*dy)+(1./2.)))*cos(4.*xc(:) + 6.)-sin(4.*xc(:) + 6.)
+!   aP(:,ny)=aP(:,ny)-aN(:,ny)*((1./(6.*dy))-(1./2.))/((1./(6.*dy))+(1./2.))
+!   aN(:,ny)=0.0
+   
+!    corrección calovi
+   aP(:,ny) = aP(:,ny) + aN(:,ny)*(0.5-1.0/(6.0*dy))/(0.5+1.0/(6.0*dy))
+   sP(:,ny) = sP(:,ny) + aN(:,ny)*(cos(4.0*xc(:)+6.0)-sin(4.0*xc(:)+6.0))/(0.5+(1.0/(dy*6.0)))
+   aN(:,ny) = 0.0
   
   !Cara Sur   !
-  SP(:,1)=SP(:,1)+ 2.0*aS(:,1)*U(1:nx,0)
-  aP(:,1)=aP(:,1)+aS(:,1)
-  aS(:,1)=0.0
+!   SP(:,1)=SP(:,1)+ 2.0*aS(:,1)*U(1:nx,0)
+!   aP(:,1)=aP(:,1)+aS(:,1)
+!   aS(:,1)=0.0
+
+! corrección calovi
+aP(:,1) = aP(:,1) + aS(:,1)
+sP(:,1) = sP(:,1) + aS(:,1)*2.0*cos(4.0*xc(:))
+aS(:,1) = 0.0
 
   !Para optimizar los códigos, una propuesta de saul fue asistir a un curso de ciencias computacionales
 	
-  !Ajustando valores de la frontera
-  U(nx+1,:)=U(nx,:)
-  U(0,:)=U(1,:)
-  U(:,ny+1)=U(:,ny)
+!   !Ajustando valores de la frontera
+!   U(nx+1,:)=U(nx,:)
+!   U(0,:)=U(1,:)
+!   U(:,ny+1)=U(:,ny)
 
-
+!corrección calovi
+!Aproximación a las condiciones de frontera (por estética)
+!Norte
+U(:,ny+1) = U(:,ny)
+!Sur
+U(1:nx,0) = U(1:nx,1)
+!Oeste
+U(0,:) = U(1,:)
+!Este
+U(nx+1,:) = U(nx,:)
 
 
   !Gauss TDMA2D para un arreglo [A]{T}={S} 
@@ -95,16 +123,20 @@ Program Laplace
   
 
 !Solución analitica
-do j=0, ny+1
-	do i=0, nx+1
-		Ua(i,j)=cos(4.*x(i)+6.*yc(i))
-	enddo
-enddo
+! do j=0, ny+1
+! 	do i=0, nx+1
+! 		Ua(i,j)=cos(4.*x(i)+6.*yc(i))
+! 	enddo
+! enddo
+
+! corrección calovi
+do i=0,nx+1
+	do j=0,ny+1
+		Ua(i,j) = cos(4.0*xc(i) + 6.0*yc(j))
+	end do
+end do
 
   call  WriteScalarField2D('Temp2D-ana',0,Ua,xc,yc,nx,ny) 
-
-
-
 
   !Imprimir solución numérica y análitica en un documento
 !!$  do j=0,ny+1
