@@ -138,7 +138,7 @@ DO it=1,itmax
   
   !ESTE
   aP(ei,1:ej)=aP(ei,1:ej)+dbkx*aE(ei,1:ej)
-  Sp(ei,1:ej)=Sp(ei,1:ej)+(1+dbkx)*aE(ei,1:ej)*v(ei+1,1:ej)
+  Sp(ei,1:ej)=Sp(ei,1:ej)+(1+dbkx)*aE(ei,1:ej)*0.
   aE(ei,1:ej)=0.0
   
   !OESTE

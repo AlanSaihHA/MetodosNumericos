@@ -1,0 +1,25 @@
+ set size square; set xrange[0:1]; set yrange[0:1]; unset key
+ p 'vel280.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel479.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel679.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel880.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel1080.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel1279.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel1479.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel1680.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel1880.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel2518.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel3000.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
+ p 'vel4000.txt' u 1:2:(0.25*$3):(0.25*$4) w vec
+ pause 0.1
