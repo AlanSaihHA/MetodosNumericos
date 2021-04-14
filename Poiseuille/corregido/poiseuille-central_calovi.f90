@@ -1,36 +1,26 @@
 PROGRAM LID_DRIVEN
 IMPLICIT NONE
 !Declaración de variables
-CHARACTER*100 itchar,NTEXT,NFILE
+CHARACTER*100 itchar
 INTEGER i,j,nx,ny,maxiter_S,itmax,ei,ej,it,maxiter,c
 REAL*4 dx,dy,x0,xl,y0,yl,dv,Se,Sw,Sn,Ss,tolerance,residual,time,dt,ue,uw,vn,vs,Div,re,gamma,dbkx,dbky,time_count
-REAL*4 error,residuo1,residuo2
-INTEGER*4 ntmax,nt
-REAL*4, ALLOCATABLE :: M(:,:),N(:,:)
 REAL*4, ALLOCATABLE :: aE(:,:),aW(:,:),aN(:,:),aS(:,:),aP(:,:),Sp(:,:),u(:,:),u1(:,:),v(:,:),v1(:,:)
 REAL*4, ALLOCATABLE :: x(:),xc(:),y(:),yc(:),P(:,:),Pp(:,:),d_h(:,:),d_v(:,:),uc(:,:),vc(:,:)
 
 !Inicialización de variables
-nx=60; ny=20
+nx=80; ny=20
 x0=0.0; xl=10.0
 y0=0.0; yl=1.0
-Re=10.0
-time=5.
-dt=0.001
+Re=100.0
+time=10.
+dt=0.005
 maxiter_S=1000
 maxiter=1000
 tolerance=1e-3
 
-  error=1e-5
-  residuo1=1.0
-  residuo2=1.
-  it=0
-  ntmax=10000
-
 ALLOCATE(aE(nx,ny),aW(nx,ny),aN(nx,ny),aS(nx,ny),aP(nx,ny),Sp(nx,ny),P(0:nx+1,0:ny+1),Pp(0:nx+1,0:ny+1))
 ALLOCATE(u(0:nx,0:ny+1),u1(0:nx,0:ny+1),v(0:nx+1,0:ny),v1(0:nx+1,0:ny),x(0:nx),xc(0:nx+1),y(0:ny),yc(0:ny+1))
 ALLOCATE(uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1),d_h(0:nx+1,0:ny+1),d_v(0:nx+1,0:ny+1))
-ALLOCATE(M(0:nx,0:ny+1),N(0:nx+1,0:ny))
 
 gamma=1.0/Re
 dx=(xl-x0)/FLOAT(nx)
@@ -44,11 +34,13 @@ CALL MESH_1D(nx,x0,xl,x,xc)
 CALL MESH_1D(ny,y0,yl,y,yc)
 
 !Condiciones de frontera e iniciales
-u=0.0; v=0.0; P=0.0; Pp=0.0
+!calovi
+u=1.0; v=0.0; P=0.0; Pp=0.0
 
+u(:,ny+1)=0.0;u(:,0)=0.0;
 d_h=0.0; d_v=0.0
 
-u(0,:)=1.0		!Entrada de flujo
+! u(0,:)=1.0		!Entrada de flujo
 
 
 u1=u; v1=v		!u1 y v1 son al tiempo actual
@@ -61,15 +53,11 @@ WRITE(1,*)'set size square; set xrange[0:10]; set yrange[0:1]; unset key'
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !INICIA CICLO TEMPORAL
 ! 
-  nt=0
-  do while (nt<ntmax .and. residuo1>error .and. residuo2>error) 
-  M=u
-  N=v
-!DO it=1,itmax
+DO it=1,itmax
 
   Div=1.0
   c=1
-  time_count=nt*dt-dt
+  time_count=it*dt-dt
   !INICIA CICLO SIMPLEC!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   DO WHILE ((c .LT. maxiter_S) .AND. (Div .GT. tolerance))
   aE=0.0; aW=0.0; aN=0.0; aS=0.0; aP=0.0; Sp=0.0
@@ -100,8 +88,12 @@ WRITE(1,*)'set size square; set xrange[0:10]; set yrange[0:1]; unset key'
   dbkx=0.0; dbky=1.0
   
   !ESTE
-  aP(ei,1:ej)=aP(ei,1:ej)+dbkx*aE(ei,1:ej)
-  Sp(ei,1:ej)=Sp(ei,1:ej)+(1+dbkx)*aE(ei,1:ej)*u(ei+1,1:ej)
+!   aP(ei,1:ej)=aP(ei,1:ej)+dbkx*aE(ei,1:ej)
+!   Sp(ei,1:ej)=Sp(ei,1:ej)+(1+dbkx)*aE(ei,1:ej)*u(ei+1,1:ej)
+!   aE(ei,1:ej)=0.0
+! calovi
+  aP(ei,1:ej)=aP(ei,1:ej)-aE(ei,1:ej) !condición Neumann
+  ! SP(ei,1:ej)=SP(ei,1:ej)+(1.0+dbkx)*aE(ei,1:ej)*u(ei+1,1:ej)
   aE(ei,1:ej)=0.0
   
   !OESTE
@@ -153,8 +145,12 @@ WRITE(1,*)'set size square; set xrange[0:10]; set yrange[0:1]; unset key'
   dbkx=1.0; dbky=0.0
   
   !ESTE
-  aP(ei,1:ej)=aP(ei,1:ej)-dbkx*aE(ei,1:ej)
-  Sp(ei,1:ej)=Sp(ei,1:ej)+(1+dbky)*aE(ei,1:ej)*v(ei+1,1:ej)*dx
+!   aP(ei,1:ej)=aP(ei,1:ej)-dbkx*aE(ei,1:ej)
+!   Sp(ei,1:ej)=Sp(ei,1:ej)+(1+dbky)*aE(ei,1:ej)*v(ei+1,1:ej)*dx
+!   aE(ei,1:ej)=0.0
+! calovi
+  aP(ei,1:ej)=aP(ei,1:ej)-aE(ei,1:ej)
+  ! SP(ei,1:ej)=SP(ei,1:ej)+(1.0+dbkx)*aE(ei,1:ej)*v(ei+1,1:ej)
   aE(ei,1:ej)=0.0
   
   !OESTE
@@ -216,7 +212,11 @@ aP=0.0; aE=0.0; aW=0.0; aN=0.0; aS=0.0; Sp=0.0; Pp=0.0
 	u1(i,j)=u1(i,j)+d_h(i,j)*(Pp(i,j)-Pp(i+1,j))
       END DO
     END DO
-    
+
+    ! calovi
+    !corrección de velocidades en la dirección u para condición de frontera Newmann        
+     u1(nx,:)=u1(nx-1,:)
+     
     !COMPONENTE V
     DO i=1,nx
       DO j=1,ny-1
@@ -224,6 +224,11 @@ aP=0.0; aE=0.0; aW=0.0; aN=0.0; aS=0.0; Sp=0.0; Pp=0.0
       END DO
     END DO
 
+    ! calovi
+    !corrección de velocidades en la dirección u para condición de frontera Newmann        
+    v1(nx+1,:)=v1(nx,:)
+    
+    
     !Para la divergencia y el criterio de paro
     Div=MAXVAL(ABS(Sp(1:ei,1:ej))) !Divergencia de u=0, ecuación de continuidad
     c=c+1 !Aumenta el contador de iteraciones SIMPLEC
@@ -231,49 +236,41 @@ aP=0.0; aE=0.0; aW=0.0; aN=0.0; aS=0.0; Sp=0.0; Pp=0.0
   END DO !TERMINA CICLO SIMPLEC &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   
   u=u1; v=v1
-  !Correción de la frontera derecha
-  v(nx+1,:)=v(nx,:)
   
-  WRITE(*,*)nt,c,Div, time_count
+  WRITE(*,*)it,c,Div, time_count
   
   !Escritura de campo de velocidades 
-  IF (MOD(nt,100) .EQ. 0) THEN
+  IF (MOD(it,100) .EQ. 0) THEN
     CALL interpolateToNodesUs(uc,u,nx,ny)
     CALL interpolateToNodesVs(vc,v,nx,ny)
   
-   CALL WriteVectorField('./datos/vel',nt,uc,vc,xc,yc,nx,ny)
+   CALL WriteVectorField('./datos/vel',it,uc,vc,xc,yc,nx,ny)
   
   !para el archivo de animación
-    WRITE(itchar,'(i6)')nt
+    WRITE(itchar,'(i6)')it
     itchar=ADJUSTL(itchar)
     itchar=itchar(1:LEN_TRIM(itchar))
-    WRITE(1,*)"p 'vel"//itchar(1:LEN_TRIM(itchar))//".txt' u 1:2:(0.15*$3):(0.15*$4) w vec"
-    WRITE(1,*)'pause 1.0'
+    WRITE(1,*)"p 'vel"//itchar(1:LEN_TRIM(itchar))//".txt' u 1:2:(0.25*$3):(0.25*$4) w vec"
+    WRITE(1,*)'pause 0.5'
     
    !archivo propio para el tiempo indicado
     OPEN(5,FILE="./datos/"//itchar(1:LEN_TRIM(itchar))//".gp",STATUS='REPLACE')
     WRITE(5,*)'set size square; set xrange[0:10]; set yrange[0:1]; unset key'
-    WRITE(5,*)"p 'vel"//itchar(1:LEN_TRIM(itchar))//".txt' u 1:2:(0.25*$3):(0.25*$4) w vec"
-    close(5)
-   
+    WRITE(5,*)"p 'vel"//itchar(1:LEN_TRIM(itchar))//".txt' u 1:2:(0.2*$3):(0.2*$4) w vec"
+    
    !archivo para paraview
-   write(NTEXT,'(I4.4)') nt
-   NFILE='./datos_paraview/time_'//NTEXT//'.dat'
-   open(10,file=NFILE)		
-   write(10,*) 'TITLE = "TESTPLOT" '
-   write(10,*) 'VARIABLES="x","y","fx","fy","magf" '  
-   write(10,*) 'ZONE T="1", I=',nx+1,', J=',ny+1
-   do i=0,nx+1
-   do j=0,ny+1
-   write(10,*)xc(i),yc(j),uc(i,j),vc(i,j),SQRT(uc(i,j)**2+vc(i,j)**2)
-   end do
-   end do
-   close(10)
-   
-     residuo1=ABS(sum(u)-sum(M))
-     residuo2=ABS(sum(u)-sum(N))
+   !open(10,file='./datos_paraview/data'//itchar(1:LEN_TRIM(itchar))//'.dat')       
+   !write(10,*) 'TITLE= "TESTPLOT" '
+   !write(10,*) 'VARIABLES="x","y","fx","fy","magf" '              !
+   !write(10,*) 'ZONE T="1", I=',nx+1,', J=',ny+1
+
+   !do i=0,nx+1
+   !do j=0,ny+1
+   !write(10,*)xc(i),yc(j),uc(i,j),vc(i,j),SQRT(uc(i,j)**2+vc(i,j)**2)
+   !end do
+   !end do
   END IF
-  nt=nt+1
+  
 END DO !TERMINA CICLO TEMPORAL
 
 !      CALL interpolateToNodesUs(uc,u,nx,ny)
@@ -283,9 +280,11 @@ END DO !TERMINA CICLO TEMPORAL
 
 CLOSE(1)
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  
   !Solucion analitica estacionaria
    OPEN(15,FILE="Sol_analitica.txt",STATUS='REPLACE')
-   do i=0,nx+1
+   do i=0,0
    do j=0,ny+1
    if (yc(j) .ge. (yl/2.)) then
    write(15,*)xc(i),yc(j),1.*(1.-((yc(j)-(yl/2.))**2/yl**2)),0.
@@ -294,10 +293,6 @@ CLOSE(1)
    end if
    end do
    end do
-
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   
 END PROGRAM
 
