@@ -9,12 +9,13 @@ INTEGER*4 ntmax,nt
 REAL*4, ALLOCATABLE :: M(:,:),N(:,:)
 REAL*4, ALLOCATABLE :: aE(:,:),aW(:,:),aN(:,:),aS(:,:),aP(:,:),Sp(:,:),u(:,:),u1(:,:),v(:,:),v1(:,:)
 REAL*4, ALLOCATABLE :: x(:),xc(:),y(:),yc(:),P(:,:),Pp(:,:),d_h(:,:),d_v(:,:),uc(:,:),vc(:,:)
+REAL*4, ALLOCATABLE :: psi(:,:),omega(:,:)
 
 !Inicialización de variables
 nx=50; ny=50
 x0=0.0; xl=1.0
 y0=0.0; yl=1.0
-Re=1.0
+Re=1000.0
 time=6.5
 dt=0.005
 maxiter_S=100
@@ -31,6 +32,7 @@ ALLOCATE(aE(nx,ny),aW(nx,ny),aN(nx,ny),aS(nx,ny),aP(nx,ny),Sp(nx,ny),P(0:nx+1,0:
 ALLOCATE(u(0:nx,0:ny+1),u1(0:nx,0:ny+1),v(0:nx+1,0:ny),v1(0:nx+1,0:ny),x(0:nx),xc(0:nx+1),y(0:ny),yc(0:ny+1))
 ALLOCATE(uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1),d_h(0:nx+1,0:ny+1),d_v(0:nx+1,0:ny+1))
 ALLOCATE(M(0:nx,0:ny+1),N(0:nx+1,0:ny))
+ALLOCATE(psi(0:nx+1,0:ny+1),omega(0:nx+1,0:ny+1))
 
 gamma=1.0/Re
 dx=(xl-x0)/FLOAT(nx)
@@ -44,7 +46,7 @@ CALL MESH_1D(nx,x0,xl,x,xc)
 CALL MESH_1D(ny,y0,yl,y,yc)
 
 !Condiciones de frontera e iniciales
-u=0.0; v=0.0; P=0.0; Pp=0.0
+u=0.0; v=0.0; P=0.0; Pp=0.0; psi = 0.0; omega=0.0
 
 d_h=0.0; d_v=0.0
 
@@ -256,8 +258,15 @@ aP=0.0; aE=0.0; aW=0.0; aN=0.0; aS=0.0; Sp=0.0; Pp=0.0
    if (mod(nt,1000) == 0)then 
      CALL interpolateToNodesUs(uc,u,nx,ny)
      CALL interpolateToNodesVs(vc,v,nx,ny)
+     CALL streampsi(psi,uc,nx,ny,dy)
+     CALL vorticity(omega,uc,vc,nx,ny,dx,dy)
+     
+     
      CALL WriteVectorField('vel',nt,uc,vc,xc,yc,nx,ny)
-!para el archivo de animación
+     CALL WritePsi('psi',nt,psi,xc,yc,nx,ny)
+     CALL WriteVorticity('omega',nt,omega,xc,yc,nx,ny)     
+    
+    !para el archivo de animación
     WRITE(itchar,'(i6)')nt
     itchar=ADJUSTL(itchar)
     itchar=itchar(1:LEN_TRIM(itchar))
@@ -290,6 +299,33 @@ CLOSE(1)
 END PROGRAM
 
 !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+SUBROUTINE streampsi(psi,uc,nx,ny,dy)
+IMPLICIT NONE
+INTEGER i,j,nx,ny
+REAL*4 dy
+real:: uc(0:nx+1,0:ny+1),psi(0:nx+1,0:ny+1)
+
+do i=0,nx+1
+ do j=1,ny+1
+  psi(i,j) = psi(i,j-1) + uc(i,j)*dy
+ end do
+end do
+
+END SUBROUTINE
+
+SUBROUTINE vorticity(omega,uc,vc,nx,ny,dx,dy)
+IMPLICIT NONE
+INTEGER i,j,nx,ny
+REAL*4 dy,dx
+real:: uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1),omega(0:nx+1,0:ny+1)
+
+do i=0,nx+1
+ do j=0,ny+1
+  omega(i,j) = (uc(i,j+1)-uc(i,j))/dy - (vc(i+1,j)-vc(i,j))/dx
+ end do
+end do
+
+END SUBROUTINE
 SUBROUTINE MESH_1D(nx,x0,xl,x,xc)
 IMPLICIT NONE
 INTEGER i, nx
@@ -484,4 +520,47 @@ open(11,file=Filename(1:len_trim(Filename)))
 	write(11,*)''
 	end do
 close(11)
+End Subroutine
+
+
+!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+Subroutine WritePsi(Name,kx,psi,xc,yc,nx,ny)
+integer i,j,nx,ny,kx
+real*4 psi(0:nx+1,0:ny+1),xc(0:nx+1),yc(0:ny+1)
+character*(*)Name
+character*50 txt,Filename
+write(txt,'(i6)')kx
+txt=ADJUSTL(txt)
+Filename=name//txt(1:len_trim(txt))//".txt"
+
+open(11,file=Filename(1:len_trim(Filename)))
+	do i=0,nx+1
+	do j=0,ny+1
+	write(11,*)xc(i),yc(j),psi(i,j)
+	end do
+	write(11,*)''
+	end do
+close(11)
+End Subroutine
+
+!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ 
+Subroutine WriteVorticity(Name,kx,omega,xc,yc,nx,ny)
+integer i,j,nx,ny,kx
+real*4 omega(0:nx+1,0:ny+1),xc(0:nx+1),yc(0:ny+1)
+character*(*)Name
+character*50 txt,Filename
+write(txt,'(i6)')kx
+txt=ADJUSTL(txt)
+Filename=name//txt(1:len_trim(txt))//".txt"
+
+open(12,file=Filename(1:len_trim(Filename)))
+	do i=0,nx+1
+	do j=0,ny+1
+	write(12,*)xc(i),yc(j),omega(i,j)
+	end do
+	write(12,*)''
+	end do
+close(12)
 End Subroutine
