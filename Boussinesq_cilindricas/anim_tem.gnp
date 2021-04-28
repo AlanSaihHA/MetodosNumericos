@@ -1,0 +1,81 @@
+ set size square; set xrange[-1:1]; set yrange[-1:1]; set view map
+ sp 'T100.txt' w pm3d
+ pause 0.5
+ sp 'T200.txt' w pm3d
+ pause 0.5
+ sp 'T300.txt' w pm3d
+ pause 0.5
+ sp 'T400.txt' w pm3d
+ pause 0.5
+ sp 'T500.txt' w pm3d
+ pause 0.5
+ sp 'T600.txt' w pm3d
+ pause 0.5
+ sp 'T700.txt' w pm3d
+ pause 0.5
+ sp 'T800.txt' w pm3d
+ pause 0.5
+ sp 'T900.txt' w pm3d
+ pause 0.5
+ sp 'T1000.txt' w pm3d
+ pause 0.5
+ sp 'T1100.txt' w pm3d
+ pause 0.5
+ sp 'T1200.txt' w pm3d
+ pause 0.5
+ sp 'T1300.txt' w pm3d
+ pause 0.5
+ sp 'T1400.txt' w pm3d
+ pause 0.5
+ sp 'T1500.txt' w pm3d
+ pause 0.5
+ sp 'T1600.txt' w pm3d
+ pause 0.5
+ sp 'T1700.txt' w pm3d
+ pause 0.5
+ sp 'T1800.txt' w pm3d
+ pause 0.5
+ sp 'T1900.txt' w pm3d
+ pause 0.5
+ sp 'T2000.txt' w pm3d
+ pause 0.5
+ sp 'T2100.txt' w pm3d
+ pause 0.5
+ sp 'T2200.txt' w pm3d
+ pause 0.5
+ sp 'T2300.txt' w pm3d
+ pause 0.5
+ sp 'T2400.txt' w pm3d
+ pause 0.5
+ sp 'T2500.txt' w pm3d
+ pause 0.5
+ sp 'T2600.txt' w pm3d
+ pause 0.5
+ sp 'T2700.txt' w pm3d
+ pause 0.5
+ sp 'T2800.txt' w pm3d
+ pause 0.5
+ sp 'T2900.txt' w pm3d
+ pause 0.5
+ sp 'T3000.txt' w pm3d
+ pause 0.5
+ sp 'T3100.txt' w pm3d
+ pause 0.5
+ sp 'T3200.txt' w pm3d
+ pause 0.5
+ sp 'T3300.txt' w pm3d
+ pause 0.5
+ sp 'T3400.txt' w pm3d
+ pause 0.5
+ sp 'T3500.txt' w pm3d
+ pause 0.5
+ sp 'T3600.txt' w pm3d
+ pause 0.5
+ sp 'T3700.txt' w pm3d
+ pause 0.5
+ sp 'T3800.txt' w pm3d
+ pause 0.5
+ sp 'T3900.txt' w pm3d
+ pause 0.5
+ sp 'T4000.txt' w pm3d
+ pause 0.5

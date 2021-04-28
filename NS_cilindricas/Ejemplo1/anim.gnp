@@ -1,0 +1,61 @@
+ set view map
+ p 'vel100.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel200.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel300.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel400.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel500.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel600.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel700.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel800.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel900.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1000.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1100.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1200.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1300.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1400.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1500.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1600.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1700.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1800.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel1900.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2000.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2100.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2200.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2300.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2400.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2500.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2600.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2700.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2800.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel2900.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
+ p 'vel3000.txt' u 1:2:(0.15*$3):(0.15*$4) w vec
+ pause 0.05
