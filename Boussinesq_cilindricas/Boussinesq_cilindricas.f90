@@ -25,19 +25,20 @@ Program NavierStokesLIDCAVITY
   !definiendo las constantes
   !  q=0.
 
-  time=20.0
-  dt=0.005
+  time=1.0
+  dt=0.001
   itmax=int(time/dt)+1   
   !Re=100.0
   !gama=1.0/Re !es la función gamma, que se lee en  gamma*S/delta
   Pr=0.7
-  Ra= 1e-4
+  Ra= 1e4
   max_iter=1000
   tolerance= 1e-5
 
   !definiendo el tamaño del vector
   allocate(Pp(0:nth+1,0:nr+1),P(0:nth+1,0:nr+1),aP(nth,nr),aE(nth,nr),aW(nth,nr),aS(nth,nr),aN(nth,nr))
-  allocate(SP(nth,nr),u(0:nth+1,0:nr+1),v(0:nth+1,0:nr),u1(0:nth+1,0:nr+1),v1(0:nth+1,0:nr),thc(0:nth+1),th(0:nth),rc(0:nr+1),r(0:nr))
+  allocate(SP(nth,nr),u(0:nth+1,0:nr+1),v(0:nth+1,0:nr),u1(0:nth+1,0:nr+1),v1(0:nth+1,0:nr),&
+  thc(0:nth+1),th(0:nth),rc(0:nr+1),r(0:nr))
   allocate(de(0:nth+1,0:nr+1),dn(0:nth+1,0:nr+1),uc(0:nth+1,0:nr+1),vc(0:nth+1,0:nr+1))
   allocate(T(0:nth+1,0:nr+1))
 
@@ -50,8 +51,8 @@ Program NavierStokesLIDCAVITY
   dn=0.0;de=0.0
   
   !Condición de frontera
-  T=1.				!Cilindro interno
-  T(:,nr+1) = 0.		!Cilindro externo
+  T=0.				!Todo el dominio incluyendo cilindro externo
+  T(:,0) = 1.		!Cilindro interno
   
   
   !u(:,nr+1)=1.0!cos(thc(:))!1.0
@@ -62,6 +63,8 @@ Program NavierStokesLIDCAVITY
   !archivo de animación de velocidad
   OPEN(1,FILE='anim_vel.gnp',STATUS='REPLACE')
   WRITE(1,*)'set view map'!; set xrange[-1:1]; set yrange[-1:1]; unset key'
+  WRITE(1,*)'set size square'
+  WRITE(1,*)'unset key'
 
   !archivo de animación de temperatura
   OPEN(2,FILE='anim_tem.gnp',STATUS='REPLACE')
@@ -72,8 +75,8 @@ Program NavierStokesLIDCAVITY
      Div=1.0
      c=1
 
-!     do while((Div .GE. tolerance) .AND. (c .LT. max_iter)) !ciclo simplec
- !       aP=0.0;aE=0.0;aW=0.0; aS=0.0; aN=0.0; SP=0.0
+     do while((Div .GE. tolerance) .AND. (c .LT. max_iter)) !ciclo simplec
+       aP=0.0;aE=0.0;aW=0.0; aS=0.0; aN=0.0; SP=0.0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 !***************************************Empieza ecuación de temperatura**********************************
@@ -83,15 +86,13 @@ Program NavierStokesLIDCAVITY
 	do i=1,nth
 		do j=1,nr
 
-			rp=rc(j);rn=r(j);rs=r(j-1)
-
-			!Áreas
-              		Sn=rn*dth; Ss=rs*dth;dv=rp*dr*dth
-              		
-			ue = 0.5*(u(i,j) + u(i+1,j))
-			uw = 0.5*(u(i,j) + u(i-1,j))
-			un = 0.5*(v(i,j) + v(i,j+1))
-			us = 0.5*(v(i,j) + v(i,j-1))
+      		      rp=rc(j);rn=r(j);rs=r(j-1)
+		      !Áreas
+        	      Sn=rn*dth; Ss=rs*dth;dv=rp*dr*dth
+        	      ue=0.5*(u(i,j)+u(i+1,j))
+        	      uw=0.5*(u(i,j)+u(i-1,j))
+        	      un=0.5*(v(i,j)+v(i+1,j))
+        	      us=0.5*(v(i,j-1)+v(i+1,j-1))
 			
 			aE(i,j) = Se/(rp*dth) - 0.5*ue*Se
 			aW(i,j) = Sw/(rp*dth) + 0.5*uw*Sw
@@ -127,10 +128,10 @@ Program NavierStokesLIDCAVITY
 
 	call Gauss_TDMA2D(T,nth,nr,aP,aE,aW,aN,aS,Sp,nth,nr,max_iter,tolerance,residual)
 
-     do while((Div .GE. tolerance) .AND. (c .LT. max_iter)) !ciclo simplec
-        aP=0.0;aE=0.0;aW=0.0; aS=0.0; aN=0.0; SP=0.0
+ !    do while((Div .GE. tolerance) .AND. (c .LT. max_iter)) !ciclo simplec
+ !       aP=0.0;aE=0.0;aW=0.0; aS=0.0; aN=0.0; SP=0.0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!
+  aP=0.0; aE=0.0; aW=0.0; aN=0.0; aS=0.0; Sp=0.0 
 !*******************************Empieza ecuación de u1*******************************************
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -154,7 +155,9 @@ Program NavierStokesLIDCAVITY
               aS(i,j)=Pr*Ss/dr +0.5*(us*Ss)              
               aP(i,j)=aE(i,j) + aW(i,j) +  aN(i,j) +  aS(i,j) + dv/dt
               SP(i,j)=(u(i,j))*(dv/dt) -(P(i+1,j)-P(i,j))*dv/(rp*dth)
-   	      SP(i,j)=SP(i,j)-u(i,j)*0.5*(un+us)*(dv/rp)-Pr*u(i,j)*dv/(rp*rp)   + Ra*Pr*T(i,j)*cos(thc(i))
+   	      SP(i,j)=SP(i,j)-u(i,j)*0.5*(un+us)*(dv/rp)-Pr*u(i,j)*dv/(rp*rp)   + &
+   	      Ra*Pr*0.5*(T(i+1,j)+T(i,j))*cos(th(i))*dv
+   	      
               br1=0.5*(v(i,j)+v(i,j-1))
               br0=0.5*(v(i+1,j)+v(i+1,j-1))     
 	      SP(i,j)=SP(i,j)+2.0*Pr*(br0-br1)*dv/(rp*rp*dth)
@@ -222,7 +225,8 @@ Program NavierStokesLIDCAVITY
               aS(i,j)=Pr*Ss/dr +0.5*(us*Ss)              
               aP(i,j)=aE(i,j) + aW(i,j) +  aN(i,j) +  aS(i,j) + dv/dt
               SP(i,j)=v(i,j)*(dv/dt) -(P(i,j+1)-P(i,j))*(dv/dr)
-              SP(i,j)=SP(i,j)+ (0.5*(ue+uw))**2*dv/rp - Pr*v(i,j)*dv/(rp*rp) - 2.0*gama*(ue-uw)*dv/(rp*rp*dth) + Ra*Pr*T(i,j)*sin(thc(i))
+              SP(i,j)=SP(i,j)+ (0.5*(ue+uw))**2*dv/rp - Pr*v(i,j)*dv/(rp*rp) - 2.0*gama*(ue-uw)*dv/(rp*rp*dth) + &
+              Ra*Pr*0.5*(T(i,j+1)+T(i,j))*sin(th(i))*dv
               
            enddo
         enddo
@@ -340,8 +344,7 @@ enddo
     WRITE(itchar,'(i6)')it    
     itchar=ADJUSTL(itchar)
     itchar=itchar(1:LEN_TRIM(itchar))
-    WRITE(1,*)"p 'vel"//itchar(1:LEN_TRIM(itchar))//".txt' u 1:2:(200*$3):(200*$4) w vec"
-    !WRITE(1,*)"p 'vel"//itchar(1:LEN_TRIM(itchar))//".txt' u 1:2:(0.15*$3):(0.15*$4) w vec"
+    WRITE(1,*)"p 'vel"//itchar(1:LEN_TRIM(itchar))//".txt' u 1:2:(0.01*$3):(0.01*$4) w vec lt -1"
     WRITE(1,*)'pause 0.05'
  !   a=a+1.0
  
