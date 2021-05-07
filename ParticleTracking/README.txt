@@ -10,7 +10,7 @@ Instrucciones para poder ejecutar los programas:
 2. Se ejecutan los siguientes comandos desde la terminal, en este orden:
 
 :~$ ifort -o VecField.out main.f90 && ./VecField.out
-:~$ ifort particle_tracking.f90 -o PTracking.out && ./PTracking.out
+:~$ ifort patricle_tracking.f90 -o PTracking.out && ./PTracking.out
 
 3. Para visualizar en gnuplot la animación para el campo de velocidades,
 	 se cambia al directorio VecFieldAnim:

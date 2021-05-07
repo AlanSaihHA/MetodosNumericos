@@ -1,34 +1,41 @@
-Program NavierStokesLIDCAVITY
+Program rotor_prueba
 !!!LID DRIVEN CAVITY
   implicit none
   CHARACTER*100 itchar
   real gama,Re,dx,dy,Se,Sw,Sn,Ss,q,dv,ue,uw,un,us,ot
   real x0,xl,y0,yl,tolerance,residual,dt, time,Div,dbkx,dbky
-  real pi,a
   integer nx,i,j,c,ny,max_iter,it,itmax,ei,ej,bi,bj
   real, allocatable::Pp(:,:),P(:,:),de(:,:),dn(:,:),aP(:,:),aE(:,:),aW(:,:),aS(:,:),aN(:,:),SP(:,:)
   real, allocatable::xc(:),x(:),yc(:),y(:),u1(:,:),v1(:,:),u(:,:),v(:,:),uc(:,:),vc(:,:)
+  INTEGER, ALLOCATABLE :: mark_cells(:,:), psi(:,:) !arreglo para marcar celdas
+  REAL*4 x0_obs,y0_obs,xl_obs,yl_obs, v_obs,x_obs !variables para definir el obstáculo sólido
+  REAL*4 r, a, Ct, rho, Vd, Area, pi                                      !datos del rotor
   !Pp,u0,v0 valores conocidos de las iteraciones anteriores 
 
   !definiendo el tamaño de la malla
   !Ocupar mallas siempre de potencia de 2
-  nx=200
-  ny=60
+  nx=150
+  ny=30
+  pi =acos(-1.0)
+  r=1.
+  Area= pi*r*r 
+  a=1./3.
+  Ct=4.*a*(1.-a)    !Ct=0.2
+  rho=1.225
   x0=0.0
-  xl=10.0
+  xl=7.*r           !El largo del dominio es 7 veces el radio
   y0=0.0
-  yl=1.0
+  yl=2.*r           !El ancho del dominio es 2 veces el radio
   dx=(xl-x0)/float(nx)
   dy=(yl-y0)/float(ny)
   dv=dx*dy
 
   !definiendo las constantes
   !  q=0.
-  pi =acos(-1.0)
   time=10.0
   dt=0.005
   itmax=int(time/dt)+1   
-  Re=100.0
+  Re=1000.0
   gama=1.0/Re !es la función gamma, que se lee en  gamma*S/delta
   max_iter=1000
   tolerance= 1e-5
@@ -37,23 +44,49 @@ Program NavierStokesLIDCAVITY
   allocate(Pp(0:nx+1,0:ny+1),P(0:nx+1,0:ny+1),aP(nx,ny),aE(nx,ny),aW(nx,ny),aS(nx,ny),aN(nx,ny))
   allocate(SP(nx,ny),u(0:nx,0:ny+1),v(0:nx+1,0:ny),u1(0:nx,0:ny+1),v1(0:nx+1,0:ny),xc(0:nx+1),x(0:nx),yc(0:ny+1),y(0:ny))
   allocate(de(0:nx+1,0:ny+1),dn(0:nx+1,0:ny+1),uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1))
-
+  allocate(mark_cells(nx,ny), psi(0:nx+1,0:ny+1))
+  
   !llamando la rubrutina que genera la malla
   call Mesh1D(xc,x,x0,xl,nx)
   call Mesh1D(yc,y,y0,yl,ny)
 
+
+x0_obs=3.*r; xl_obs=3.*r+dx; y0_obs=0.; yl_obs=r !localización del obstáculo, el rotor se coloca a 3 radios de la entrada
+mark_cells=0.0
+
+OPEN(3,FILE='datos/obstaculo.txt',STATUS='replace')
+!ciclo para marcar el obstaculo y anular velocidades dentro de él
+DO i=1, nx
+  DO j=1, ny
+    IF ((xc(i) .GT. x0_obs) .AND. (xc(i) .LT. xl_obs) .AND. (yc(j) .GT. y0_obs) .AND. (yc(j) .LT. yl_obs)) THEN !Obstáculo cuadrado
+      mark_cells(i,j)=1
+      WRITE(3,*)xc(i),yc(j)
+    END IF
+  END DO
+END DO
+CLOSE(3)
+
   !precolocando los vectores
-  u=1.0;v=0;P=0.0;Pp=0.0;
+  u=1.0;v=0.;P=0.0;Pp=0.0;
   dn=0.0;de=0.0
-  u(:,ny+1)=0.0;
+  !u(:,ny+1)=0.0;
   !u(:,0)=0.0;
 !   u(:,1:ny)=1.0 !velocidad de entrada
   !definiendo las áreas
   Se=dy; Sw=dy; Sn=dx; Ss=dx
   u1=u;v1=v
-  !archivo de animación
-  OPEN(1,FILE='anim.gnp',STATUS='REPLACE')
-  WRITE(1,*)'set size square; set xrange[0:10]; set yrange[0:1]; unset key'
+  
+  !archivo de animación de velocidades en todo el dominio
+  OPEN(1,FILE='datos/anim.gnp',STATUS='REPLACE')
+  WRITE(1,*)'set size square; set xrange[0:',xl,']; set yrange[0:',yl,']; unset key'
+  
+  !archivo de animación de velocidades en el plano del rotor
+  OPEN(4,FILE='datos/anim_vel_rotor.gnp',STATUS='REPLACE')
+  WRITE(4,*)'set size square; set xrange[0:1]; set yrange[0.9:1.1]; unset key'
+  
+  !archivo de animación de líneas de corriente
+  OPEN(7,FILE='datos/anim_streamlines.gnp',STATUS='REPLACE')
+  WRITE(7,*)'set size square; set xrange[0:',xl,']; set yrange[0:',yl,']; unset key'
 
   do it=1,itmax !ciclo temporal
      Div=1.0
@@ -77,12 +110,18 @@ Program NavierStokesLIDCAVITY
               un=0.5*(v(i,j)+v(i+1,j))
               us=0.5*(v(i,j-1)+v(i+1,j-1))
               !utilizando esquema central sólo por este momento
-              aE(i,j)=gama*Se/dx-0.5*(ue*Se)
-              aW(i,j)=gama*Sw/dx +0.5*(uw*Sw)              
-              aN(i,j)=gama*Sn/dy -0.5*(un*Sn)              
-              aS(i,j)=gama*Ss/dy +0.5*(us*Ss)              
+              aE(i,j)=gama*Se/dx-0.5*rho*(ue*Se)
+              aW(i,j)=gama*Sw/dx +0.5*rho*(uw*Sw)              
+              aN(i,j)=gama*Sn/dy -0.5*rho*(un*Sn)              
+              aS(i,j)=gama*Ss/dy +0.5*rho*(us*Ss)              
               SP(i,j)=(u(i,j))*(dv/dt) -(P(i+1,j)-P(i,j))*dv/dx  !En este caso dv=dx*dy              
               aP(i,j)=aE(i,j) + aW(i,j) +  aN(i,j) +  aS(i,j) + dv/dt
+              
+              
+              IF ((mark_cells(i,j) .EQ. 1)) THEN            !Agregando T*dv al término fuente
+              Sp(i,j)=Sp(i,j) - 0.5*rho*Area*u(0,j)*u(0,j)*Ct*dv
+              END IF
+        
            enddo
         enddo
         !Condición de simetría axial. 
@@ -96,18 +135,18 @@ Program NavierStokesLIDCAVITY
         aE(ei,1:ej)=0.0
 
         !Cara Oeste  
-        aP(bi,1:ej)=aP(1,1:ej)+dbkx*aW(1,1:ej)
+        aP(bi,1:ej)=aP(1,1:ej)+dbkx*aW(1,1:ej)  !Condición Dirichlet
         SP(bi,1:ej)=SP(1,1:ej)+(1.0+dbkx)*aW(1,1:ej)*u(0,1:ej)
         aW(bi,1:ej)=0.0
 
         !Cara Norte
-        SP(1:ei,ej)=SP(1:ei,ej)+ (1+dbky)*aN(1:ei,ej)*u(1:ei,ej+1)
-        aP(1:ei,ej)=aP(1:ei,ej)+dbky*aN(1:ei,ej)
+        aP(1:ei,ej)=aP(1:ei,ej)+dbky*aN(1:ei,ej)     !Condición Dirichlet
+        SP(1:ei,ej)=SP(1:ei,ej)+ (1+dbky)*aN(1:ei,ej)*u(1:ei,ej+1)       
         aN(1:ei,ej)=0.0
 
         !Cara Sur
+        aP(1:ei,1)=aP(1:ei,1)+dbky*aS(1:ei,1)        !Condición Neumann
         SP(1:ei,1)=SP(1:ei,1)+ (1+dbky)*aS(1:ei,1)*u(bi:ei,0)
-        aP(1:ei,1)=aP(1:ei,1)+dbky*aS(1:ei,1)
         aS(1:ei,1)=0.0
         
         do j=bj,ej           
@@ -136,12 +175,17 @@ Program NavierStokesLIDCAVITY
               un=0.5*(v(i,j)+v(i,j+1))
               us=0.5*(v(i,j)+v(i,j-1))
               !utilizando esquema central sólo por este momento
-              aE(i,j)=gama*Se/dx-0.5*(ue*Se)
-              aW(i,j)=gama*Sw/dx +0.5*(uw*Sw)              
-              aN(i,j)=gama*Sn/dy -0.5*(un*Sn)              
-              aS(i,j)=gama*Ss/dy +0.5*(us*Ss)              
+              aE(i,j)=gama*Se/dx-0.5*rho*(ue*Se)
+              aW(i,j)=gama*Sw/dx +0.5*rho*(uw*Sw)              
+              aN(i,j)=gama*Sn/dy -0.5*rho*(un*Sn)              
+              aS(i,j)=gama*Ss/dy +0.5*rho*(us*Ss)              
               SP(i,j)=(v(i,j))*(dv/dt) -(P(i,j+1)-P(i,j))*dv/dy              !En este caso dv=dx*dy              
               aP(i,j)=aE(i,j) + aW(i,j) +  aN(i,j) +  aS(i,j) + dv/dt
+              
+              IF ((mark_cells(i,j) .EQ. 1)) THEN             !Agregando T*dv al término fuente
+              Sp(i,j)=Sp(i,j) - 0.5*rho*Area*u(0,j)*u(0,j)*Ct*dv
+              END IF
+              
            enddo
         enddo
         
@@ -152,23 +196,23 @@ Program NavierStokesLIDCAVITY
         dbkx=1.0
         dbky=0.0
         !Cara Este
-        aP(ei,1:ej)=aP(ei,1:ej)-aE(ei,1:ej)
+        aP(ei,1:ej)=aP(ei,1:ej)-aE(ei,1:ej)        !Condición Neumann
        ! SP(ei,1:ej)=SP(ei,1:ej)+(1.0+dbkx)*aE(ei,1:ej)*v(ei+1,1:ej)
         aE(ei,1:ej)=0.0
 
         !Cara Oeste  
-        aP(bi,1:ej)=aP(1,1:ej)+dbkx*aW(1,1:ej)
+        aP(bi,1:ej)=aP(1,1:ej)+dbkx*aW(1,1:ej)       !Condición Dirichlet
         SP(bi,1:ej)=SP(1,1:ej)+(1.0+dbkx)*aW(1,1:ej)*v(bj-1,bj:ej)
         aW(bi,1:ej)=0.0
 
         !Cara Norte
-        SP(1:ei,ej)=SP(1:ei,ej)+ (1+dbky)*aN(1:ei,ej)*v(bi:ei,ej+1)
-        aP(1:ei,ej)=aP(1:ei,ej)+dbky*aN(1:ei,ej)
+        SP(1:ei,ej)=SP(1:ei,ej) - (1+dbky)*aN(1:ei,ej)*v(bi:ei,ej+1)        !Condición Neumann
+        !aP(1:ei,ej)=aP(1:ei,ej)+dbky*aN(1:ei,ej)
         aN(1:ei,ej)=0.0
 
         !Cara Sur
-        SP(1:ei,bj)=SP(1:ei,1)+ (1+dbky)*aS(1:ei,1)*v(bi:ei,0)
-        aP(1:ei,bj)=aP(1:ei,bj)+dbky*aS(1:ei,1)
+        aP(1:ei,bj)=aP(1:ei,bj) + dbky*aS(1:ei,1)                   !Condición Dirichlet
+        SP(1:ei,bj)=SP(1:ei,1) + (1+dbky)*aS(1:ei,1)*v(bi:ei,0)           
         aS(1:ei,bj)=0.0
         !Gauss TDMA2D para un arreglo [A]{T}={S}
         call Gauss_TDMA2D(v1,ei,ej,aP,aE,aW,aN,aS,sP,nx,ny,max_iter,tolerance,residual)  
@@ -177,8 +221,11 @@ Program NavierStokesLIDCAVITY
               dn(i,j)=Sn/(ap(i,j)-(aE(i,j)+aW(i,j)+aN(i,j)+aS(i,j)))
            enddo
         enddo
+       
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!111
 	!CORRECIÓN DE LA PRESIÓN
-	aP=0.0; aE=0.0; aW=0.0; aN=0.0; aS=0.0; Sp=0.0; Pp=0.0 ! Pp=p' P=P* + P'
+	aP=0.0; aE=0.0; aW=0.0; aN=0.0; aS=0.0; Sp=0.0; Pp=0.0 
         ei=ubound(Pp,1)-1
         ej=ubound(Pp,2)-1
         bi=lbound(Pp,1)+1
@@ -227,7 +274,7 @@ Program NavierStokesLIDCAVITY
         v1(nx+1,:)=v1(nx,:)
         
         !Condición de simetría axial
-        u1(:,0)=u1(:,1)     
+        u1(:,0)=u1(:,1)
         v1(:,0)=0.0
         
         Div=maxval(abs(Sp(1:ei,1:ej)))
@@ -238,12 +285,12 @@ Program NavierStokesLIDCAVITY
      
      write(*,*)it,c,Div
      !Escritura de campo de velocidades        
-    IF (MOD(it,100) .EQ. 0) THEN
+  IF (MOD(it,100) .EQ. 0) THEN
   
     CALL interpolateToNodesUs(uc,u,nx,ny)
     CALL interpolateToNodesVs(vc,v,nx,ny)
   
-    CALL WriteVectorField('vel',it,uc,vc,xc,yc,nx,ny)
+    CALL WriteVectorField('datos/vel',it,uc,vc,xc,yc,nx,ny)
   
   !para el archivo de animación 
     WRITE(itchar,'(i6)')it    
@@ -251,25 +298,50 @@ Program NavierStokesLIDCAVITY
     itchar=itchar(1:LEN_TRIM(itchar))
     WRITE(1,*)"p 'vel"//itchar(1:LEN_TRIM(itchar))//".txt' u 1:2:(0.25*$3):(0.25*$4) w vec"
     WRITE(1,*)'pause 0.05'
+    
+    
+    !Escribiendo las velocidades del rotor en un archivo
+    OPEN(5,FILE='datos/vel_rotor'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')
+    do i=1,ei
+    do j=1, ej
+    IF ((mark_cells(i,j) .EQ. 1)) THEN   
+    write(5,*) yc(j)/r, u(i,j)/u(0,ny/2)  
+    ENDIF              !Se escribe las velocidades normalizadas respecto a la velocidad de entrada en el plano del rotor
+    enddo
+    enddo
+    !Escribiendo velocidades en el rotor en el archivo de animación del rotor
+    WRITE(4,*)"p 'vel_rotor"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
+    WRITE(4,*)'pause 0.05'    
+    
+    !Escribiendo líneas de corriente
+    OPEN(8,FILE='datos/streamlines'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')   !Creando el archivo de líneas de corriente
+    do i=0,nx
+    psi(i,0) = 0.0
+    do j=1,ny-1
+	psi(i,j)=psi(i,j-1) + u(i,j)*dy
+	write(8,*) xc(i), psi(i,j)  
+    end do
+    end do  
+    !Escribiendo líneas de corriente en el archivo de animación del rotor
+    WRITE(7,*)"p 'streamlines"//itchar(1:LEN_TRIM(itchar))//".txt'"
+    WRITE(7,*)'pause 0.05'        
+    
   END IF
   enddo !ciclo temporal
-! SOLUCIÓN ANÁLITICA
+
+
 
   !Escritura de resultados
-open(1,file="analitica.txt", status="replace")
+!open(1,file="datos/analitica.txt", status="replace")
 ! 
 ! ! do i = 0,nx+1  
-do j=0,ny+1
+!do j=0,ny+1
 ! write(*,*)'Esto es la presión dp/dx',(Pp(nx-6,j)-Pp(nx-7,j))/(2*dx)
-	write(1,*) xc(nx+1),yc(j),1.2*(1.0-(yc(j)/(yl))*(yc(j)/(yl))), 0.0
-end do
-! end do
-close(1)
-!  call  interpolateToNodesUs(uc,u,nx,ny)
-!  call interpolateToNodesVs(vc,v,nx,ny)
-                       !(name,un entero cualsea,uc,vc,xc,yc,nx,ny) 
-!  call WriteVectorField('vel',0,uc,vc,xc,yc,nx,ny)
-  end Program NavierStokesLIDCAVITY
+!	write(1,*) xc(nx+1),yc(j),1.2*(1.0-(yc(j)/(yl))*(yc(j)/(yl))), 0.0
+!end do
+
+
+  end Program rotor_prueba
   !!****************************************************************************************************************
   Subroutine Mesh1D(xc,x,x0,xl,nx)
     integer i,j,nx
