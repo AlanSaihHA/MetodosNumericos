@@ -12,6 +12,7 @@ Program rotor_prueba
   REAL*4 r, a, Ct, rho, Vd, Area, pi                                      !datos del rotor
   integer nxm,n1,n2   !Variables para malla unequal
   real xm1,xm2           !Variables para mallam unequal
+  integer z, b
   !Pp,u0,v0 valores conocidos de las iteraciones anteriores 
   
   !Datos de teoŕia del rotor y rotor
@@ -38,14 +39,14 @@ Program rotor_prueba
   yl=2.*r           !El ancho del dominio es 2 veces el radio
   
   
-  dx=(xl-x0)/float(nx)
-  dy=(yl-y0)/float(ny)
-  dv=dx*dy
+  !dx=(xl-x0)/float(nx)
+  !dy=(yl-y0)/float(ny)
+  !dv=dx*dy
 
 
   !definiendo las constantes
   !  q=0.
-  time=10.0
+  time=5.0
   dt=0.005
   itmax=int(time/dt)+1   
   Re=1000.0
@@ -55,7 +56,8 @@ Program rotor_prueba
 
   !definiendo el tamaño del vector
   allocate(Pp(0:nx+1,0:ny+1),P(0:nx+1,0:ny+1),aP(nx,ny),aE(nx,ny),aW(nx,ny),aS(nx,ny),aN(nx,ny))
-  allocate(SP(nx,ny),u(0:nx,0:ny+1),v(0:nx+1,0:ny),u1(0:nx,0:ny+1),v1(0:nx+1,0:ny),xc(0:nx+1),x(0:nx),yc(0:ny+1),y(0:ny))
+  allocate(SP(nx,ny),u(0:nx,0:ny+1),v(0:nx+1,0:ny), &
+  u1(0:nx,0:ny+1),v1(0:nx+1,0:ny),xc(0:nx+1),x(0:nx),yc(0:ny+1),y(0:ny))
   allocate(de(0:nx+1,0:ny+1),dn(0:nx+1,0:ny+1),uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1))
   allocate(mark_cells(nx,ny), psi(0:nx+1,0:ny+1))
   
@@ -65,7 +67,7 @@ Program rotor_prueba
   call Mesh1D(yc,y,y0,yl,ny)                !vertical
 
 
-x0_obs=3.*r; xl_obs=3.*r+dx; y0_obs=0.; yl_obs=r !localización del obstáculo, el rotor se coloca a 3 radios de la entrada
+x0_obs=3.*r; xl_obs=3.*r+(xm2-xm1)/nxm; y0_obs=0.; yl_obs=r !localización del obstáculo, el rotor se coloca a 3 radios de la entrada
 mark_cells=0.0
 
 OPEN(3,FILE='datos/obstaculo.txt',STATUS='replace')
@@ -87,20 +89,37 @@ CLOSE(3)
   !u(:,0)=0.0;
 !   u(:,1:ny)=1.0 !velocidad de entrada
   !definiendo las áreas
-  Se=dy; Sw=dy; Sn=dx; Ss=dx
+  !Se=dy; Sw=dy; Sn=dx; Ss=dx
   u1=u;v1=v
   
   !archivo de animación de velocidades en todo el dominio
   OPEN(1,FILE='datos/anim.gnp',STATUS='REPLACE')
+  WRITE(1,*) 'reset'
   WRITE(1,*)'set size square; set xrange[0:',xl,']; set yrange[0:',yl,']; unset key'
+
   
-  !archivo de animación de velocidades en el plano del rotor
-  OPEN(4,FILE='datos/anim_vel_rotor.gnp',STATUS='REPLACE')
+  !archivo de animación de velocidades axiales en el plano del rotor
+  OPEN(4,FILE='datos/anim_vel_axial.gnp',STATUS='REPLACE')
+  WRITE(4,*) 'reset'
   WRITE(4,*)'set size square; set xrange[0:1]; set yrange[0.9:1.1]; unset key'
-  write(4,*) "set xlabel 'r/R'; set ylabel 'U/U_0'"
+  WRITE(4,*) "set xlabel 'r/R'; set ylabel 'u/U_0'"
+  
+  !archivo de animación de velocidades tangenciales en el plano del rotor
+  OPEN(9,FILE='datos/anim_vel_tangen.gnp',STATUS='REPLACE')
+  WRITE(9,*) 'reset'
+  !WRITE(9,*)'set size square; set xrange[0:1]; set yrange[0.9:1.1]; unset key'
+  write(9,*) "set xlabel 'r/R'; set ylabel 'v/U_0'"
+  
+  
+  !archivo de animación para factor de interferencia axial
+  OPEN(13,FILE='datos/anim_factor_axial.gnp',STATUS='REPLACE')
+  WRITE(13,*) 'reset'
+  !WRITE(9,*)'set size square; set xrange[0:1]; set yrange[0.9:1.1]; unset key'
+  write(13,*) "set xlabel 'r/R'; set ylabel '1-u/U_0'"
   
   !archivo de animación de líneas de corriente
   OPEN(7,FILE='datos/anim_streamlines.gnp',STATUS='REPLACE')
+  WRITE(7,*) 'reset'
   WRITE(7,*)'set size square; set xrange[0:',xl,']; set yrange[0:',yl,']; unset key'
 
   do it=1,itmax !ciclo temporal
@@ -327,22 +346,59 @@ CLOSE(3)
     WRITE(1,*)'pause 0.05'
     
     
-    !Escribiendo las velocidades del rotor en un archivo
-    OPEN(5,FILE='datos/vel_rotor'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')
+    !Escribiendo las velocidades axiales del rotor en un archivo
+    OPEN(5,FILE='datos/vel_axial'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')
     do i=1,ei
     do j=1, ej
     IF ((mark_cells(i,j) .EQ. 1)) THEN   
-    write(5,*) yc(j)/r, u(i,j)/u(0,ny/2)  
-    ENDIF              !Se escribe las velocidades normalizadas respecto a la velocidad de entrada en el plano del rotor
+    write(5,*) yc(j)/r, u(i,j)/u(0,j)  
+    z=i
+    b=j
+    ENDIF    !Se escribe las velocidades axiales normalizadas respecto a la velocidad de entrada en el plano del rotor
     enddo
     enddo
+    write(5,*) yc(b+1)/r, u(z,b+1)/u(0,b+1) 
+    write(5,*) yc(b+2)/r, u(z,b+2)/u(0,b+2) 
     !Escribiendo velocidades en el rotor en el archivo de animación del rotor
-    WRITE(4,*)"p 'vel_rotor"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
+    WRITE(4,*)"p 'vel_axial"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
     WRITE(4,*)'pause 0.25'   
-    write(4,*) 'reset'
-    WRITE(4,*)'set size square; set xrange[0:1]; set yrange[0.9:1.1]; unset key'
-    write(4,*) "set xlabel 'r/R'; set ylabel 'U/U_0'"
+    
+    
+    !Escribiendo las velocidades axiales del rotor en un archivo
+    OPEN(10,FILE='datos/vel_tangen'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')
+    do i=1,ei
+    do j=1, ej
+    IF ((mark_cells(i,j) .EQ. 1)) THEN   
+    write(10,*) yc(j)/r, v(i,j)/u(0,j)  
+    z=i
+    b=j
+    ENDIF    !Se escribe las velocidades axiales normalizadas respecto a la velocidad de entrada en el plano del rotor
+    enddo
+    enddo
+    write(10,*) yc(b+1)/r, v(z,b+1)/u(0,b+1) 
+    write(10,*) yc(b+2)/r, v(z,b+2)/u(0,b+2) 
+    !Escribiendo velocidades tangenciales del rotor en el archivo de animación
+    WRITE(9,*)"p 'vel_tangen"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
+    WRITE(9,*)'pause 0.25'  
+
      
+    !Escribiendo el factor de interferencia axial
+    OPEN(12,FILE='datos/factor_axial'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')
+    do i=1,ei
+    do j=1, ej
+    IF ((mark_cells(i,j) .EQ. 1)) THEN   
+    write(12,*) yc(j)/r, 1.-u(i,j)/u(0,j)  
+    z=i
+    b=j
+    ENDIF    
+    enddo
+    enddo
+    write(12,*) yc(b+1)/r, 1.-u(z,b+1)/u(0,b+1) 
+    write(12,*) yc(b+2)/r, 1.-u(z,b+2)/u(0,b+2) 
+    !Escribiendo factor axial en el archivo de animación
+    WRITE(13,*)"p 'factor_axial"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
+    WRITE(13,*)'pause 0.25'    
+    
     
     !Escribiendo líneas de corriente
     OPEN(8,FILE='datos/streamlines'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')   !Creando el archivo de líneas de corriente
@@ -360,6 +416,13 @@ CLOSE(3)
   END IF
   enddo !ciclo temporal
 
+!do i=1, ei
+!do j=1, ej
+!IF ((mark_cells(i,j) .EQ. 1)) THEN  
+!write(*,*) xc(i), yc(j), mark_cells(i,j)
+!ENDIF
+!enddo
+!enddo
 
   end Program rotor_prueba
   !!****************************************************************************************************************
