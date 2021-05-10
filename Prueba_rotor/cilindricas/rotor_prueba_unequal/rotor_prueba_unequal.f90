@@ -1,5 +1,5 @@
 Program rotor_prueba
-!!!LID DRIVEN CAVITY
+
   implicit none
   CHARACTER*100 itchar
   real gama,Re,dx,dy,Se,Sw,Sn,Ss,q,dv,ue,uw,un,us,ot
@@ -97,6 +97,7 @@ CLOSE(3)
   !archivo de animación de velocidades en el plano del rotor
   OPEN(4,FILE='datos/anim_vel_rotor.gnp',STATUS='REPLACE')
   WRITE(4,*)'set size square; set xrange[0:1]; set yrange[0.9:1.1]; unset key'
+  write(4,*) "set xlabel 'r/R'; set ylabel 'U/U_0'"
   
   !archivo de animación de líneas de corriente
   OPEN(7,FILE='datos/anim_streamlines.gnp',STATUS='REPLACE')
@@ -204,9 +205,9 @@ CLOSE(3)
               SP(i,j)=(v(i,j))*(dv/dt) -(P(i,j+1)-P(i,j))*dv/dy              !En este caso dv=dx*dy              
               aP(i,j)=aE(i,j) + aW(i,j) +  aN(i,j) +  aS(i,j) + dv/dt
               
-              IF ((mark_cells(i,j) .EQ. 1)) THEN             !Agregando T*dv al término fuente
-              Sp(i,j)=Sp(i,j) - 0.5*rho*Area*u(0,j)*u(0,j)*Ct*dv
-              END IF
+              !IF ((mark_cells(i,j) .EQ. 1)) THEN             !Agregando T*dv al término fuente
+              !Sp(i,j)=Sp(i,j) - 0.5*rho*Area*u(0,j)*u(0,j)*Ct*dv
+              !END IF
               
            enddo
         enddo
@@ -337,7 +338,11 @@ CLOSE(3)
     enddo
     !Escribiendo velocidades en el rotor en el archivo de animación del rotor
     WRITE(4,*)"p 'vel_rotor"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
-    WRITE(4,*)'pause 0.05'    
+    WRITE(4,*)'pause 0.25'   
+    write(4,*) 'reset'
+    WRITE(4,*)'set size square; set xrange[0:1]; set yrange[0.9:1.1]; unset key'
+    write(4,*) "set xlabel 'r/R'; set ylabel 'U/U_0'"
+     
     
     !Escribiendo líneas de corriente
     OPEN(8,FILE='datos/streamlines'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')   !Creando el archivo de líneas de corriente
@@ -354,17 +359,6 @@ CLOSE(3)
     
   END IF
   enddo !ciclo temporal
-
-
-
-  !Escritura de resultados
-!open(1,file="datos/analitica.txt", status="replace")
-! 
-! ! do i = 0,nx+1  
-!do j=0,ny+1
-! write(*,*)'Esto es la presión dp/dx',(Pp(nx-6,j)-Pp(nx-7,j))/(2*dx)
-!	write(1,*) xc(nx+1),yc(j),1.2*(1.0-(yc(j)/(yl))*(yc(j)/(yl))), 0.0
-!end do
 
 
   end Program rotor_prueba
