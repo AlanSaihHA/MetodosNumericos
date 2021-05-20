@@ -1,22 +1,22 @@
  reset
  set size square; set xrange[0:   7.00000000     ]; set yrange[0:   2.00000000     ]; unset key
- p 'streamlines100.txt' w l
- pause 0.05
- p 'streamlines200.txt' w l
- pause 0.05
- p 'streamlines300.txt' w l
- pause 0.05
- p 'streamlines400.txt' w l
- pause 0.05
- p 'streamlines500.txt' w l
- pause 0.05
- p 'streamlines600.txt' w l
- pause 0.05
- p 'streamlines700.txt' w l
- pause 0.05
- p 'streamlines800.txt' w l
- pause 0.05
- p 'streamlines900.txt' w l
- pause 0.05
- p 'streamlines1000.txt' w l
- pause 0.05
+ p 'psi100.txt' w l
+ pause 0.25
+ p 'psi200.txt' w l
+ pause 0.25
+ p 'psi300.txt' w l
+ pause 0.25
+ p 'psi400.txt' w l
+ pause 0.25
+ p 'psi500.txt' w l
+ pause 0.25
+ p 'psi600.txt' w l
+ pause 0.25
+ p 'psi700.txt' w l
+ pause 0.25
+ p 'psi800.txt' w l
+ pause 0.25
+ p 'psi900.txt' w l
+ pause 0.25
+ p 'psi1000.txt' w l
+ pause 0.25

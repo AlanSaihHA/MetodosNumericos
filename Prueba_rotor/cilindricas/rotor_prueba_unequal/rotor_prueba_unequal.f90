@@ -7,7 +7,8 @@ Program rotor_prueba
   integer nx,i,j,c,ny,max_iter,it,itmax,ei,ej,bi,bj
   real, allocatable::Pp(:,:),P(:,:),de(:,:),dn(:,:),aP(:,:),aE(:,:),aW(:,:),aS(:,:),aN(:,:),SP(:,:)
   real, allocatable::xc(:),x(:),yc(:),y(:),u1(:,:),v1(:,:),u(:,:),v(:,:),uc(:,:),vc(:,:)
-  INTEGER, ALLOCATABLE :: mark_cells(:,:), psi(:,:) !arreglo para marcar celdas
+  INTEGER, ALLOCATABLE :: mark_cells(:,:) !arreglo para marcar celdas
+  real, allocatable:: psi(:,:)
   REAL*4 x0_obs,y0_obs,xl_obs,yl_obs, v_obs,x_obs !variables para definir el obstáculo sólido
   REAL*4 r, a, Ct, rho, Vd, Area, pi                                      !datos del rotor
   integer nxm,n1,n2   !Variables para malla unequal
@@ -401,28 +402,15 @@ CLOSE(3)
     
     
     !Escribiendo líneas de corriente
-    OPEN(8,FILE='datos/streamlines'//itchar(1:LEN_TRIM(itchar))//'.txt',STATUS='replace')   !Creando el archivo de líneas de corriente
-    do i=0,nx
-    psi(i,0) = 0.0
-    do j=1,ny-1
-	psi(i,j)=psi(i,j-1) + u(i,j)*dy
-	write(8,*) xc(i), psi(i,j)  
-    end do
-    end do  
+    CALL streampsi(psi,uc,nx,ny,dy) 
+    CALL WritePsi('datos/psi',it,psi,xc,yc,nx,ny)
     !Escribiendo líneas de corriente en el archivo de animación del rotor
-    WRITE(7,*)"p 'streamlines"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
-    WRITE(7,*)'pause 0.05'        
-    
+    WRITE(7,*)"p 'psi"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
+    WRITE(7,*)'pause 0.25'       
+
   END IF
   enddo !ciclo temporal
 
-!do i=1, ei
-!do j=1, ej
-!IF ((mark_cells(i,j) .EQ. 1)) THEN  
-!write(*,*) xc(i), yc(j), mark_cells(i,j)
-!ENDIF
-!enddo
-!enddo
 
   end Program rotor_prueba
   !!****************************************************************************************************************
@@ -666,4 +654,42 @@ End Subroutine
     end do
   End Subroutine Mesh1D_unequal
 
-!::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+Subroutine WritePsi(Name,kx,psi,xc,yc,nx,ny)
+integer i,j,nx,ny,kx
+real*4 psi(0:nx+1,0:ny+1),xc(0:nx+1),yc(0:ny+1)
+character*(*)Name
+character*50 txt,Filename
+write(txt,'(i6)')kx
+txt=ADJUSTL(txt)
+Filename=name//txt(1:len_trim(txt))//".txt"
+
+open(14,file=Filename(1:len_trim(Filename)))
+	do i=0,nx+1
+	do j=0,ny+1
+	write(14,*) xc(i),yc(j),psi(i,j)
+	end do
+	write(14,*)''
+	end do
+close(14)
+End Subroutine
+
+!::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+SUBROUTINE streampsi(psi,uc,nx,ny,dy)
+IMPLICIT NONE
+INTEGER i,j,nx,ny
+REAL*4 dy
+real:: uc(0:nx+1,0:ny+1),psi(0:nx+1,0:ny+1)
+
+do i=0,nx+1
+ do j=1,ny+1
+  psi(i,j) = psi(i,j-1) + uc(i,j)*dy
+ end do
+end do
+
+END SUBROUTINE
+
+
+
+
