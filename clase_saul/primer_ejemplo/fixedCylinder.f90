@@ -81,21 +81,21 @@
 !				Initial data
 !======================================================================================	  
 	  maxstep=1000000
-	  endtime=1000.0d0
+	  endtime=1000.0d0            !Se utiliza 0.0d0 para doble precision, ejemplo 5.33d6=5360000.00000000
 	  xl=16.0d0
 	  yl=8.0d0
 	  r0=1.0d0
-	  r1=2.6d0
-	  r2=1.0d0
-	  Ifi1=0.0d0
-	  Ifi2=1.0d0
+	  r1=2.6d0       !densidad del solido
+	  r2=1.0d0       !densidad del liquido o fluido
+	  Ifi1=0.0d0      !Campo indicador en el solido
+	  Ifi2=1.0d0      !Campo indicador en el fluido
 	  gx=0.0d0
 	  gy=0.0d0
 	  dt=0.0005d0
 	  Re=100.0d0
 	  gama=1.0d0/Re
-	  xcc=4.0d0
-	  ycc=4.0d0
+	  xcc=4.0d0      !centro posicion del objeto solido
+	  ycc=4.0d0       !centro posicion del objeto solido
 	  
 
 !=======================================================================================
@@ -110,13 +110,13 @@
 	  ibdry=0    !0 ciclicas
 	  jbdry=0    ! 1 de frontera	  
 
-	ucco=0.0d0
-	vcco=0.0d0
+	ucco=0.0d0   !velocidad inicial del cuerpo
+	vcco=0.0d0   !velocidad inicial del cuerpo
 
 	npvel=1
 	nppr=1
 	nback=6000000	  
-          write(*,*)' TYPE name of output files'
+          write(*,*)' TYPE name of output files'    !Escritura de directorio donde se guardaran los datos
 	     read (5,'(a10)')fname
          lfnm=len_trim(fname)+1					
          
@@ -132,20 +132,20 @@
       xmv=30.0d0
       mv=30
 
-      call gsetup(ut,vt,ro,p,tmp1,tmp2,tmp3,nxp2,nyp2)
+      call gsetup(ut,vt,ro,p,tmp1,tmp2,tmp3,nxp2,nyp2)        !inicia las variables (las coloca en cero)
 
 ! SET PARAMETERS FOR FRONT RESTRUCTURING
-      amax=0.8/hxi
-      amin=0.2/hxi
-      am=0.5*(amax+amin)
+      amax=0.8/hxi              !maximo tamanyo de un elemento   hxi=1/dx
+      amin=0.2/hxi              !minimo tamanyo de un elemento   hxi=1/dx
+      am=0.5*(amax+amin)        !distancia "optima"
 
       time=0.0d0
       
       call finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt,maxel,am,prop1,prop2,xcc,ycc)    !Crear el círculo
-      call fcurv(cv,t1,t2,cnt,pt,icp,ine,ptcon,elcon,maxel,maxpt,norm)
+      call fcurv(cv,t1,t2,cnt,pt,icp,ine,ptcon,elcon,maxel,maxpt,norm)               !Calcula vectores normales al contorno
 
 	k=ffe
-	do ll=1,ne	
+	do ll=1,ne	!escribe los vectores normales al contorno
 		write(1020,*)cnt(k,1),cnt(k,2),norm(k,1),norm(k,2)
 		k=elcon(k)
 	enddo					  			  
@@ -153,7 +153,7 @@
         call setdens(r0,nfronts,xcc,ycc,r,nxp2,nyp2,prop1)
         write(*,*)maxval(r),minval(r)
 
-	call dens2(r,rtmp,temp1,temp2,nxp2,nyp2,pt,ptcon,icp,elcon,elprop,maxpt,maxel)
+	call dens2(r,rtmp,temp1,temp2,nxp2,nyp2,pt,ptcon,icp,elcon,elprop,maxpt,maxel)   !calculo de funcion marcador con gradiente
 	call gifield(color,r,nxp2,nyp2)
 	
 !Initial conditions	
@@ -314,7 +314,7 @@ subroutine gifield(color,r,nxp2,nyp2)
 
 end
 !-----------------------------------------------------------------------!
- subroutine dens2(r,rtmp,tmp1,tmp2,nxp2,nyp2,pt,ptcon,icp,elcon,elprop,maxpt,maxel)  
+ subroutine dens2(r,rtmp,tmp1,tmp2,nxp2,nyp2,pt,ptcon,icp,elcon,elprop,maxpt,maxel)  !campo indicador
 
       use grid !/hxi,hyi,nxp1,nyp1,nx,ny,xl,yl
       use bounds !/ibdry,jbdry,nxlast,nylast
@@ -569,17 +569,17 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
           fp(is,5)=0.0d0
           fp(is,6)=0.0d0
   
-!                         { itp=1 for a cylinder}
-        nps=int(2.0d0*pi*radin/am) 
+!                         { itp=1 for a cylinder}  !Comienzo de archivo a leer
+        nps=int(2.0d0*pi*radin/am)    !Se comienzan los puntos del circulo
         dth=2.0d0*pi/float(nps) 
         rad=radin 
-        do i=1,nps 
+        do i=1,nps                                 
          th=dth*(float(i)-0.5d0) 
          pt(i+nptot,1)=xcc + rad*cos(th)
          pt(i+nptot,2)=ycc + rad*sin(th) 
-        enddo 
+        enddo                                 !Final archivo de leer
  
-       do i=1,nps 
+       do i=1,nps                          ! Se comienzan los elementos del circulo
            icp(i+netot,1)=i    +nptot
            icp(i+netot,2)=i+1  +nptot
            ine(i+netot,1)=i-1  +netot
@@ -608,7 +608,7 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
 
 ! set connectivity
 
-      do i = 1,maxpt-1
+      do i = 1,maxpt-1       !SE comienza conexion entre puntos y elementos
        ptcon(i)=i+1
        bptcon(i+1)=i
      enddo
