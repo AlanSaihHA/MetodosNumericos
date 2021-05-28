@@ -14,6 +14,8 @@ Program rotor_prueba
   integer nxm,n1,n2   !Variables para malla unequal
   real xm1,xm2           !Variables para mallam unequal
   integer z, b
+  REAL*4, ALLOCATABLE :: omega(:,:)    !Vorticidad
+  real dxx, kx
   !Pp,u0,v0 valores conocidos de las iteraciones anteriores 
   
   !Datos de teoŕia del rotor y rotor
@@ -50,7 +52,7 @@ Program rotor_prueba
   time=5.0
   dt=0.005
   itmax=int(time/dt)+1   
-  Re=1000.0
+  Re=10000.0
   gama=1.0/Re !es la función gamma, que se lee en  gamma*S/delta
   max_iter=1000
   tolerance= 1e-5
@@ -61,6 +63,7 @@ Program rotor_prueba
   u1(0:nx,0:ny+1),v1(0:nx+1,0:ny),xc(0:nx+1),x(0:nx),yc(0:ny+1),y(0:ny))
   allocate(de(0:nx+1,0:ny+1),dn(0:nx+1,0:ny+1),uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1))
   allocate(mark_cells(nx,ny), psi(0:nx+1,0:ny+1))
+  allocate(omega(0:nx+1,0:ny+1))
   
   
   !llamando la rubrutina que genera la malla
@@ -149,7 +152,7 @@ CLOSE(3)
               dy=(yl-y0)/float(ny)
               Se=dy; Sw=dy; Sn=dx; Ss=dx
               dv=dx*dy
-              aE(i,j)=gama*Se/dx-0.5*rho*(ue*Se)
+              aE(i,j)=gama*Se/dx -0.5*rho*(ue*Se)
               aW(i,j)=gama*Sw/dx +0.5*rho*(uw*Sw)              
               aN(i,j)=gama*Sn/dy -0.5*rho*(un*Sn)              
               aS(i,j)=gama*Ss/dy +0.5*rho*(us*Ss)              
@@ -158,7 +161,10 @@ CLOSE(3)
               
               
               IF ((mark_cells(i,j) .EQ. 1)) THEN            !Agregando T*dv al término fuente
+              !a=(u(0,j)-u(i,j))/u(0,j)
+              !Ct=4.*a*(1.-a)
               Sp(i,j)=Sp(i,j) - ((0.5*rho*Area*u(0,j)*u(0,j)*Ct*r)/(rho*u(0,j)*u(0,j)*Area*dx))*dv
+              dxx=dx
               END IF
         
            enddo
@@ -352,14 +358,25 @@ CLOSE(3)
     do i=1,ei
     do j=1, ej
     IF ((mark_cells(i,j) .EQ. 1)) THEN   
-    write(5,*) yc(j)/r, u(i,j)/u(0,j)  
+    write(5,*) yc(j)/r, u(i,j)/u(0,j)
+    write(*,*) u(i,j), u(0,j)    
     z=i
     b=j
     ENDIF    !Se escribe las velocidades axiales normalizadas respecto a la velocidad de entrada en el plano del rotor
     enddo
     enddo
     write(5,*) yc(b+1)/r, u(z,b+1)/u(0,b+1) 
+    write(*,*) u(z,b+1),u(0,b+1)   
     write(5,*) yc(b+2)/r, u(z,b+2)/u(0,b+2) 
+    write(*,*) u(z,b+2),u(0,b+2)
+    write(5,*) yc(b+3)/r, u(z,b+3)/u(0,b+3) 
+    write(*,*) u(z,b+3),u(0,b+3)
+    write(5,*) yc(b+4)/r, u(z,b+4)/u(0,b+4) 
+    write(*,*) u(z,b+4),u(0,b+4)
+    write(5,*) yc(b+5)/r, u(z,b+5)/u(0,b+5) 
+    write(*,*) u(z,b+5),u(0,b+5)
+    write(5,*) yc(b+15)/r, u(z,b+5)/u(0,b+15) 
+    write(*,*) u(z,b+15),u(0,b+15)
     !Escribiendo velocidades en el rotor en el archivo de animación del rotor
     WRITE(4,*)"p 'vel_axial"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
     WRITE(4,*)'pause 0.25'   
@@ -388,7 +405,7 @@ CLOSE(3)
     do i=1,ei
     do j=1, ej
     IF ((mark_cells(i,j) .EQ. 1)) THEN   
-    write(12,*) yc(j)/r, 1.-u(i,j)/u(0,j)  
+    write(12,*) yc(j)/r, 1.-u(i,j)/u(0,j)   
     z=i
     b=j
     ENDIF    
@@ -406,10 +423,16 @@ CLOSE(3)
     CALL WritePsi('datos/psi',it,psi,xc,yc,nx,ny)
     !Escribiendo líneas de corriente en el archivo de animación del rotor
     WRITE(7,*)"p 'psi"//itchar(1:LEN_TRIM(itchar))//".txt' w l" 
-    WRITE(7,*)'pause 0.25'       
+    WRITE(7,*)'pause 0.25'  
+    
+    
+    !Escribiendo vorticidad 
+    CALL vorticity(omega,uc,vc,nx,ny,x,y)     
+    CALL WriteVorticity('datos/omega',it,omega,xc,yc,nx,ny)
 
   END IF
   enddo !ciclo temporal
+
 
 
   end Program rotor_prueba
@@ -689,7 +712,45 @@ do i=0,nx+1
 end do
 
 END SUBROUTINE
+!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+SUBROUTINE vorticity(omega,uc,vc,nx,ny,x,y)
+IMPLICIT NONE
+INTEGER i,j,nx,ny
+REAL*4 dy,dx
+real:: uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1),omega(0:nx,0:ny)
+real:: x(0:nx), y(0:ny)
+
+do i=1,nx+1
+ do j=1,ny+1
+  dx=(x(i)-x(i-1))
+  dy=y(i)-y(i-1)
+  omega(i,j) = (uc(i,j+1)-uc(i,j))/dy - (vc(i+1,j)-vc(i,j))/dx
+ end do
+end do
+End Subroutine
+
+!::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+Subroutine WriteVorticity(Name,kx,omega,xc,yc,nx,ny)
+IMPLICIT NONE
+integer i,j,nx,ny,kx
+real*4 omega(0:nx+1,0:ny+1),xc(0:nx+1),yc(0:ny+1)
+character*(*)Name
+character*50 txt,Filename
+write(txt,'(i6)')kx
+txt=ADJUSTL(txt)
+Filename=name//txt(1:len_trim(txt))//".txt"
+
+open(21,file=Filename(1:len_trim(Filename)))
+	do i=0,nx+1
+	do j=0,ny+1
+	write(21,*)xc(i),yc(j),omega(i,j)
+	end do
+	write(21,*)''
+	end do
+close(21)
+End Subroutine
 
 
 
