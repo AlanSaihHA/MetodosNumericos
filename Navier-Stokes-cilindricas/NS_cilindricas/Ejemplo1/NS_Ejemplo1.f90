@@ -42,7 +42,7 @@ Program NavierStokesLIDCAVITY
   call Mesh1D(rc,r,r0,rl,nr)
 
   !precolocando los vectores
-  u=0.;v=0;P=0.0;Pp=0.0;
+  u=0.;v=0.;P=0.0;Pp=0.0;
   dn=0.0;de=0.0
   u(:,nr+1)=1.0!cos(thc(:))!1.0
   !definiendo las áreas
@@ -82,7 +82,7 @@ Program NavierStokesLIDCAVITY
               aS(i,j)=gama*Ss/dr +0.5*(us*Ss)              
               aP(i,j)=aE(i,j) + aW(i,j) +  aN(i,j) +  aS(i,j) + dv/dt
               SP(i,j)=(u(i,j))*(dv/dt) -(P(i+1,j)-P(i,j))*dv/(rp*dth)
-   SP(i,j)=SP(i,j)-u(i,j)*0.5*(un+us)*(dv/rp)-gama*u(i,j)*dv/(rp*rp)   
+   	      SP(i,j)=SP(i,j)-u(i,j)*0.5*(un+us)*(dv/rp)-gama*u(i,j)*dv/(rp*rp)   
               br1=0.5*(v(i,j)+v(i,j-1))
               br0=0.5*(v(i+1,j)+v(i+1,j-1))     
 	      SP(i,j)=SP(i,j)+2.0*gama*(br0-br1)*dv/(rp*rp*dth)
