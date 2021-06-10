@@ -24,9 +24,9 @@ Program Lidcavity
   dx=(xl-x0)/float(nx)
   dy=(yl-y0)/float(ny)
   dv=dx*dy
-  allocate(aE(nx,ny),aW(nx,ny),aN(nx,ny),aS(nx,ny),SP(nx,ny),aP(nx,ny))
-  allocate(vor(0:nx+1,0:ny+1),psi(0:nx+1,0:ny+1),u(0:nx+1,0:ny+1),v(0:nx+1,0:ny+1),w(0:nx+1,0:ny+1), & 
-  u1(0:nx+1,0:ny+1),v1(0:nx+1,0:ny+1),w1(0:nx+1,0:ny+1))  
+  allocate(aE(nx,ny),aW(nx,ny),aN(nx,ny),aS(nx,ny),SP(nx,ny),aP(nx,ny)) 
+  allocate(vor(0:nx+1,0:ny+1),psi(0:nx+1,0:ny+1),u(0:nx+1,0:ny+1),v(0:nx+1,0:ny+1))
+  allocate(w(0:nx+1,0:ny+1), u1(0:nx+1,0:ny+1),v1(0:nx+1,0:ny+1),w1(0:nx+1,0:ny+1))  
   allocate(xc(0:nx+1),x(0:nx),yc(0:ny+1),y(0:ny))    
   
   vor=0.0; psi=0.0; u=1.0;v=0.0; w=0.0
@@ -53,7 +53,7 @@ Program Lidcavity
      enddo
      !cara sur
      do i=0,nx+1
-        vor(i,0)=0.  !-4.0*u(i,ny+1)/dy iria pero la vel es cero
+        vor(i,0)=0.0  !-4.0*u(i,ny+1)/dy iria pero la vel es cero
         !vor(i,0)=-8.0*psi(i,1)/(dy*dy)
      enddo
      !cara este
