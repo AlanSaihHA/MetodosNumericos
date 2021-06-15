@@ -1,0 +1,43 @@
+ reset
+ set size square; set xrange[0:1]; set yrange[0.9:1.1]; unset key
+ set xlabel 'r/R'; set ylabel 'u/U_0'
+ p 'vel_axial100.txt' w l
+ pause 0.25
+ p 'vel_axial200.txt' w l
+ pause 0.25
+ p 'vel_axial300.txt' w l
+ pause 0.25
+ p 'vel_axial400.txt' w l
+ pause 0.25
+ p 'vel_axial500.txt' w l
+ pause 0.25
+ p 'vel_axial600.txt' w l
+ pause 0.25
+ p 'vel_axial700.txt' w l
+ pause 0.25
+ p 'vel_axial800.txt' w l
+ pause 0.25
+ p 'vel_axial900.txt' w l
+ pause 0.25
+ p 'vel_axial1000.txt' w l
+ pause 0.25
+ p 'vel_axial1100.txt' w l
+ pause 0.25
+ p 'vel_axial1200.txt' w l
+ pause 0.25
+ p 'vel_axial1300.txt' w l
+ pause 0.25
+ p 'vel_axial1400.txt' w l
+ pause 0.25
+ p 'vel_axial1500.txt' w l
+ pause 0.25
+ p 'vel_axial1600.txt' w l
+ pause 0.25
+ p 'vel_axial1700.txt' w l
+ pause 0.25
+ p 'vel_axial1800.txt' w l
+ pause 0.25
+ p 'vel_axial1900.txt' w l
+ pause 0.25
+ p 'vel_axial2000.txt' w l
+ pause 0.25

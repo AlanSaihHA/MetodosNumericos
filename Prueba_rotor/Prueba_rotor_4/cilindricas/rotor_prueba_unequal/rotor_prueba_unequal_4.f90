@@ -166,7 +166,7 @@ CLOSE(3)
               	g = i-10
               	k = 0.1
               	do l=1,10
-              	        a=(u(0,j)-u(i,j))/u(0,j)
+              	        a=(u(0,j)-u(g+l,j))/u(0,j)
                	Ct=4.*a*(1.-a)
               		Sp(g+l,j)=Sp(g+l,j) - ((0.5*rho*Area*u(0,j)*u(0,j)*Ct*k*r)/(rho*u(0,j)*u(0,j)*Area*dx))*dv
               		k=k+0.1
