@@ -117,18 +117,18 @@
 	nppr=1
 	nback=6000000	  
           write(*,*)' TYPE name of output files'    !Escritura de directorio donde se guardaran los datos
-	     read (5,'(a10)')fname
-         lfnm=len_trim(fname)+1					
+	     read (5,'(a10)')fname    !nombre de carpeta donde se guarda
+         lfnm=len_trim(fname)+1     !long. de cadena de nombre
          
        command='mkdir '
-       command(7:7+lfnm)=fname
-       call system(command)
+       command(7:7+lfnm)=fname  !Se escribe en espacio 7 nombre de carpeta 
+       call system(command)     !se ejecuta en consola
        xname=fname
-       fname(lfnm:lfnm+1)='/'
+       fname(lfnm:lfnm+1)='/'   !resulta en "NombreCarpeta"/
        lfnm=len_trim(fname)+1 !ltr(fname,20)+1
                 
-      fxl=xl
-      fyl=yl
+      fxl=xl    !Se iguala longitud en x
+      fyl=yl    ! Se iguala longiutd en y
       xmv=30.0d0
       mv=30
 
@@ -157,11 +157,11 @@
 	call gifield(color,r,nxp2,nyp2)
 	
 !Initial conditions	
-	u=1.0d0
+	u=1.0d0 !todas vel axiales en 0
 	v=0.0d0
 	do i=1,nxp2
 	do j=1,nyp2
-	u(i,j)=u(i,j)*0.5d0*(color(i,j)+color(i+1,j))
+	u(i,j)=u(i,j)*0.5d0*(color(i,j)+color(i+1,j))   !vel en solido =0 y en fluido =1
 	v(i,j)=v(i,j)*0.5d0*(color(i,j)+color(i,j+1))
 	enddo
 	enddo	
@@ -262,9 +262,9 @@ end program
       real*8:: tmp3(nxp2,nyp2),ro(nxp2,nyp2)
       real*8:: p(nxp2,nyp2)
    
-      nxp1=nxp2-1
-      nyp1=nyp2-1
-      nx=nxp2-2
+      nxp1=nxp2-1    !todas las n menos 1
+      nyp1=nyp2-1 
+      nx=nxp2-2      !todas las n sin dos, sin celdas de fronteras
       ny=nyp2-2
       nxlast=nxp1   
       nylast=nyp1
@@ -273,9 +273,9 @@ end program
       ny1=nyp1
 
       hxi=float(nxp1-1)/xl    !xl=largo=16
-      hyi=float(nyp1-1)/yl
+      hyi=float(nyp1-1)/yl    !hxi es nx/yl, es decir, el inverso de dy 1/dy
                     
-      do i=1,nxp2
+      do i=1,nxp2    !todas las varaiables son puestas en cero
       do j=1,nyp2
        ut(i,j)=0.0d0
        vt(i,j)=0.0d0
@@ -297,9 +297,13 @@ subroutine gifield(color,r,nxp2,nyp2)
 	integer nxp2,nyp2,i,j
 	real*8:: r(nxp2,nyp2),color(nxp2,nyp2) 
  
+!Ifi1=0.0d0      !Campo indicador en el solido
+!Ifi2=1.0d0      !Campo indicador en el fluido
+!r1=2.6d0       !densidad del solido
+!r2=1.0d0       !densidad del liquido o fluido 
 	do i=1,nxp2
 	do j=1,nyp2
-	color(i,j)= (Ifi1*(r(i,j)-r2)-Ifi2*(r(i,j)-r1) )/(r1-r2)
+	color(i,j)= (Ifi1*(r(i,j)-r2)-Ifi2*(r(i,j)-r1) )/(r1-r2)  !0 en soldio, 1 en fluido
 
 	if (color(i,j) .gt. Ifi2) then
 		color(i,j)=Ifi2
@@ -560,7 +564,7 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
       netot=0
       do is=1,nfronts
       radin=0.5d0
-      prop1=r1-r2
+      prop1=r1-r2   !prop1=2.6-1.0=1.6
       prop2=0.0d0
           fp(is,1)=radin
           fp(is,2)=xcc
@@ -570,13 +574,13 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
           fp(is,6)=0.0d0
   
 !                         { itp=1 for a cylinder}  !Comienzo de archivo a leer
-        nps=int(2.0d0*pi*radin/am)    !Se comienzan los puntos del circulo
-        dth=2.0d0*pi/float(nps) 
+        nps=int(2.0d0*pi*radin/am)    !Se divide perimetro entre longitud ideal am
+        dth=2.0d0*pi/float(nps)       !diametro entre puntos a tener, arcos
         rad=radin 
         do i=1,nps                                 
          th=dth*(float(i)-0.5d0) 
-         pt(i+nptot,1)=xcc + rad*cos(th)
-         pt(i+nptot,2)=ycc + rad*sin(th) 
+         pt(i+nptot,1)=xcc + rad*cos(th)   !coordenada en x
+         pt(i+nptot,2)=ycc + rad*sin(th)   !coordenada en y
         enddo                                 !Final archivo de leer
  
        do i=1,nps                          ! Se comienzan los elementos del circulo
@@ -608,14 +612,14 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
 
 ! set connectivity
 
-      do i = 1,maxpt-1       !SE comienza conexion entre puntos y elementos
-       ptcon(i)=i+1
+      do i = 1,maxpt-1       !SE comienza conexion entre puntos y elementos, maxpt=1000
+       ptcon(i)=i+1        
        bptcon(i+1)=i
      enddo
        ptcon(lfp)=1
        bptcon(1)=lfp
 
-      do i = 1,maxel-1
+      do i = 1,maxel-1        !maxel=1000
        elcon(i)=i+1
        belcon(i+1)=i
       enddo
@@ -1358,11 +1362,11 @@ subroutine fcurv(cv,t1,t2,cnt,pt,icp,ine,ptcon,elcon,maxel,maxpt,norm)
       integer ptcon(maxpt),elcon(maxel)   
   
 
-      k=ffe
+      k=ffe    !ffe=1
       do 10 kk=1,ne 
-		xx=(xmv+0.5)*fxl    
+		xx=(xmv+0.5)*fxl    !fxl=xl
 		yy=(xmv+0.5)*fyl
-		p0x=pt(icp(k,1),1)
+		p0x=pt(icp(k,1),1)   !icp(k,1) devuelve un i
 		p0y=pt(icp(k,1),2)
 		p1x= p0x+dmod((pt(icp(k       ,2),1)-p0x+xx),fxl)-0.5*fxl
 		p1y= p0y+dmod((pt(icp(k       ,2),2)-p0y+yy),fyl)-0.5*fyl
@@ -1391,7 +1395,7 @@ subroutine fcurv(cv,t1,t2,cnt,pt,icp,ine,ptcon,elcon,maxel,maxpt,norm)
       k=elcon(k)
 10    continue
             
-      k=ffe
+      k=ffe    
       do 20 kk=1,ne
        cv(k,1)=0.5*(t2(k,1)+t1(ine(k,2),1)-t1(k,1)-t2(ine(k,1),1) )
        cv(k,2)=0.5*(t2(k,2)+t1(ine(k,2),2)-t1(k,2)-t2(ine(k,1),2) ) 
