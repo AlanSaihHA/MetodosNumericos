@@ -43,8 +43,9 @@
 
 !----------------------------------------------------------------------------
            character*20 fname, xname, statfile, datafile, filmfile,command
-
-	  
+           real, allocatable :: puntos(:,:)
+           integer num_cel
+           	  
 	    logical restart, movie
  
       integer:: noutf=1,noutv=1,noutp=1,nbkg=1,nbkf=1,noutr=1,nouto=1,nouts=1,noutu=1,noutpt=1,noutphi=1
@@ -72,7 +73,6 @@
       	allocate(pt(maxpt,2),t1(maxel,2),fp(20,6),t2(maxel,2), pto(maxpt,2),norm(maxel,2))
       	allocate(cv(maxel,2),cnt(maxel,2), elprop(maxel,3),istore(maxel,2))
       	allocate(icp(maxel,2), ine(maxel,2),iptmp(maxpt),ip(20),ptcon(maxpt),elcon(maxel),bptcon(maxpt),belcon(maxel))
-
 	  Open(7003,File='Force.txt',Status='replace')
 	  Open(1020,File='normals.txt',Status='replace') 
 !  THESE PARAMETERS SHOULD BE INPUTED 
@@ -141,7 +141,21 @@
 
       time=0.0d0
       
-      call finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt,maxel,am,prop1,prop2,xcc,ycc)    !Crear el círculo
+      nps=0
+      call finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt,maxel,am,prop1,prop2,xcc,ycc,nps)    !Crear el círculo
+      
+allocate(puntos(nps/2,4))
+num_cel=0
+do i=1, nps/2
+   !write(*,*) i, pt(i,1),pt(i,2),pt(nps/2+i,1) ,pt(nps-v,2)
+   puntos(i,1)= pt(i,1)
+   puntos(i,2)=pt(i,2)
+   puntos(i,3)=pt(nps/2+i,1)
+   puntos(i,4)=pt(nps-num_cel,2)
+   num_cel=i
+enddo
+      
+      
       call fcurv(cv,t1,t2,cnt,pt,icp,ine,ptcon,elcon,maxel,maxpt,norm)               !Calcula vectores normales al contorno
 
 	k=ffe
@@ -150,7 +164,7 @@
 		k=elcon(k)
 	enddo					  			  
 !========================================================================================================
-        call setdens(r0,nfronts,xcc,ycc,r,nxp2,nyp2,prop1)
+        call setdens(r0,nfronts,xcc,ycc,r,nxp2,nyp2,prop1,puntos,nps)
         write(*,*)maxval(r),minval(r)
 
 	call dens2(r,rtmp,temp1,temp2,nxp2,nyp2,pt,ptcon,icp,elcon,elprop,maxpt,maxel)   !calculo de funcion marcador con gradiente
@@ -214,7 +228,7 @@ end program
 !-----------------------------------------------------------------------!
 !-----------------------------------------------------------------------! 
 ! subroutine to set grid density from initial front.
-      subroutine setdens(r0,nfronts,xcc,ycc,r,nxp2,nyp2,prop1) 
+      subroutine setdens(r0,nfronts,xcc,ycc,r,nxp2,nyp2,prop1,puntos,nps) 
 
 	  use grid; use bounds
 	  use fparam
@@ -223,7 +237,9 @@ end program
 	  integer nfronts,nxp2,nyp2,i,j,l
 	  real*8  x,y,xx,yy,xfl,pi,r0,xcc,ycc,prop1
 	  real*8:: r(nxp2,nyp2)
-
+	  integer nps, m !para conteo de arhcivo
+	  real*8:: puntos(nps/2,4)
+	  
       pi=4.*ATAN(1.)
 
       do j=1,nyp2    !r=densidad, r0=1.0, prop1=r1-r2=1.6
@@ -231,14 +247,15 @@ end program
   	    r(i,j)=r0
       enddo
       enddo
-      do j=1,nyp2
-      do i=1,nxp2 
-       x=float(i-1)/hxi   !obtengo distancia del inicio al punto
-       y=float(j-1)/hyi
-             xx=abs(x-xcc)    !diferencia de distancia del punto al centro del cilindro
-             yy=abs(y-ycc)
+      
+      !do j=1,nyp2
+      !do i=1,nxp2 
+       !x=float(i-1)/hxi   !obtengo distancia del inicio al punto
+       !y=float(j-1)/hyi
+             !xx=abs(x-xcc)    !diferencia de distancia del punto al centro del cilindro
+             !yy=abs(y-ycc)
 
-            xfl=sqrt(xx**2+yy**2)-0.5d0    !reviso si estoy dentro del cilindro
+            !xfl=sqrt(xx**2+yy**2)-0.5d0    !reviso si estoy dentro del cilindro
 
          !pt(i+nptot,1)=xcc + rad*cos(th)   !coordenada en x
          !pt(i+nptot,2)=ycc + rad*sin(th)   !coordenada en y
@@ -247,11 +264,25 @@ end program
             	!xfl = sqrt((x-pt(i-1,1))**2+(y-pt(m,2))**2)
             	!xfl = xfl+xfl
             
-      if(xfl.le. 0d0) r(i,j)=r(i,j)+prop1   !si estoy dentro la densidad es 2.6
+      !if(xfl.le. 0d0) r(i,j)=r(i,j)+prop1   !si estoy dentro la densidad es 2.6
+      !enddo
+      !enddo
+      
+        do i=1, nxp2
+	do j=1, nyp2
+	        x=float(i-1)/hxi
+       	y=float(j-1)/hyi      	
+       	do m=1,nps/2
+		if ((x .gt. puntos(i,3)) .and. (x .lt. puntos(i,1)) )  then
+			if ((y .gt. puntos(i,4)) .and. (y .lt. puntos(i,2)) ) then
+				r(i,j)=r(i,j)+prop1
+			endif
+		endif
+		enddo
+	enddo
+	enddo
       
       
-      enddo
-      enddo
 
       return
       end
@@ -562,7 +593,10 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
 	  integer:: icp(maxel,2), ine(maxel,2),bptcon(maxpt),belcon(maxel),ip(20)
       integer:: ptcon(maxpt),elcon(maxel)	
       real*8::	pt(maxpt,2),elprop(maxel,3),fp(20,6)       
-
+      integer dano    !para leer archivo
+      real, allocatable ::  puntos(:,:) !para organizar coordenadas
+      integer v !para coordenadas
+      
       pi=4.*ATAN(1.)
 
 
@@ -573,7 +607,7 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
       netot=0
       do is=1,nfronts
       radin=0.5d0
-      prop1=r1-r2   !prop1=2.6-1.0=1.6
+      prop1=r1-r2
       prop2=0.0d0
           fp(is,1)=radin
           fp(is,2)=xcc
@@ -582,15 +616,45 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
           fp(is,5)=0.0d0
           fp(is,6)=0.0d0
   
+
+! Lectura de archivo de coordenadas
+open(20,file='NACA060006_int.txt')
+i=1
+DO 
+   READ(20,*,IOSTAT=dano)  pt(i,1), pt(i,2)
+   IF (dano>0) THEN
+      print*, 'error en el archivo'
+        exit
+   ELSE IF (dano<0) THEN
+      print*, 'fin de lectura de archivo'
+         exit
+   ELSE
+      print*, 'linea: ',i,'leída'
+      i=i+1
+   END IF
+END DO
+close(20)
+nps=i-1  
+
+do i=1, nps      !Se colocan las coordenadas en el lugar del objeto
+   pt(i,1) = xcc + pt(i,1)
+   pt(i,2) = ycc + pt(i,2)
+enddo
+!Fin de lectura de archivo de coordenadas
+  
+  !Se comienzan los puntos del circulo
 !                         { itp=1 for a cylinder}  !Comienzo de archivo a leer
-        nps=int(2.0d0*pi*radin/am)    !Se divide perimetro entre longitud ideal am
-        dth=2.0d0*pi/float(nps)       !diametro entre puntos a tener, arcos
-        rad=radin 
-        do i=1,nps                                 
-         th=dth*(float(i)-0.5d0) 
-         pt(i+nptot,1)=xcc + rad*cos(th)   !coordenada en x
-         pt(i+nptot,2)=ycc + rad*sin(th)   !coordenada en y
-        enddo                                 !Final archivo de leer
+!        nps=int(2.0d0*pi*radin/am)    !Se obtienen numero de puntos perimetro entre am 
+!        dth=2.0d0*pi/float(nps)       !delta tetha
+!        rad=radin                     !radio
+!        do i=1,nps                                 
+!         th=dth*(float(i)-0.5d0) 
+!         pt(i+nptot,1)=xcc + rad*cos(th)
+!         pt(i+nptot,2)=ycc + rad*sin(th) 
+!        enddo                                 !Final archivo de leer
+ !Termina puntos del circulo
+ 
+ 
  
        do i=1,nps                          ! Se comienzan los elementos del circulo
            icp(i+netot,1)=i    +nptot
@@ -621,14 +685,14 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
 
 ! set connectivity
 
-      do i = 1,maxpt-1       !SE comienza conexion entre puntos y elementos, maxpt=1000
-       ptcon(i)=i+1        
+      do i = 1,maxpt-1       !SE comienza conexion entre puntos y elementos
+       ptcon(i)=i+1
        bptcon(i+1)=i
      enddo
        ptcon(lfp)=1
        bptcon(1)=lfp
 
-      do i = 1,maxel-1        !maxel=1000
+      do i = 1,maxel-1
        elcon(i)=i+1
        belcon(i+1)=i
       enddo
