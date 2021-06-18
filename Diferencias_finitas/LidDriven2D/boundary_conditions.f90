@@ -27,8 +27,8 @@ implicit none
 
 	!x,y=ny - top
 	do i=0,nx+1
-		u1(i,ny+1)=1.0
-		u2(i,ny+1)=1.0
+		u1(i,ny+1)=2.0
+		u2(i,ny+1)=2.0
 		v1(i,ny)=-v1(i,ny+1)
 		v2(i,ny)=-v2(i,ny+1)
 	enddo

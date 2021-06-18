@@ -29,7 +29,7 @@ program LD2DNS
 
 	nx1=1 ; nx2=nx ; ny1=1 ; ny2=ny !Definición de las fronteras
 
-	Re=70.0
+	Re=1000.0
 	Ga=0.7
 	gma=0.1
 
@@ -62,7 +62,7 @@ program LD2DNS
 ! Temporal step size definition
 	dt=gma*(Re/2.)*( ( (1./dx)**2 + (1./dy)**2 )**(-1) )
 	print *, 'step size dt=',dt
-	tmax=10000 ! Number of steps during the simulation
+	tmax=50000 ! Number of steps during the simulation
 	nplot=500 ! animation parameter
 
 ! Initial conditions

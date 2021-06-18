@@ -17,6 +17,7 @@ implicit none
 
   open(10,file='vec_field.dat')
     do i=nx1-1,nx2+1
+    write(10,100)
     do j=ny1-1,ny2+1
       mag_u = sqrt(u1(i,j)*u1(i,j) + v1(i,j)*v1(i,j))
       write(10,100) x(i)-(lx/2.0),y(j)-(ly/2.0),u1(i,j),v1(i,j),p2(i,j),psi(i,j),mag_u,zeta(i,j)
