@@ -394,12 +394,12 @@ end
       sc=0.5d0
       pi=4.0d0*ATAN(1.0d0)
       pd2=0.5d0*pi
-      cnstx=(.25d0*hxi)**2 
+      cnstx=(.25d0*hxi)**2   !viene de ec.(2.43)
       cnsty=(.25d0*hyi)**2
 
       do i=1,nxp2+2
       do j=1,nyp2+2  
-       tmp1(i,j)=0.0d0
+       tmp1(i,j)=0.0d0  !se pone todos los valores de temp=0.0
        tmp2(i,j)=0.0d0
       enddo
       enddo

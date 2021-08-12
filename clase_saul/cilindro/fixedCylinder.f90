@@ -129,7 +129,7 @@
                 
       fxl=xl
       fyl=yl
-      xmv=30.0d0
+      xmv=30.0d0   !por qué es 30?
       mv=30
 
       call gsetup(ut,vt,ro,p,tmp1,tmp2,tmp3,nxp2,nyp2)
@@ -349,13 +349,13 @@ end
  
       sc=0.5d0
       pi=4.0d0*ATAN(1.0d0)
-      pd2=0.5d0*pi
-      cnstx=(.25d0*hxi)**2 
+      pd2=0.5d0*pi  !parte de ec.(2.46)
+      cnstx=(.25d0*hxi)**2  !viene de ec.(2.43)
       cnsty=(.25d0*hyi)**2
 
       do i=1,nxp2+2
       do j=1,nyp2+2  
-       tmp1(i,j)=0.0d0
+       tmp1(i,j)=0.0d0 !coloca valores de temp=0.0
        tmp2(i,j)=0.0d0
       enddo
       enddo
@@ -364,16 +364,16 @@ end
       do ll=1,ne 
        p0x=pt(icp(k,1),1)
        p0y=pt(icp(k,1),2)
-       p1x= p0x+dmod((pt(icp(k,2),1)-p0x+xx),xl)-0.5d0*xl
+       p1x= p0x+dmod((pt(icp(k,2),1)-p0x+xx),xl)-0.5d0*xl  !¿Que es esto?
        p1y= p0y+dmod((pt(icp(k,2),2)-p0y+yy),yl)-0.5d0*yl
 
-       xc=0.5*(p1x+p0x)
+       xc=0.5*(p1x+p0x)   !punto promedio de los puntos
        yc=0.5*(p1y+p0y)
        x1=p1x-p0x
        y1=p1y-p0y
 
 ! calculate components of n.dA
-      rx=-y1 *elprop(k,1)
+      rx=-y1 *elprop(k,1)  !que es
       ry= x1 *elprop(k,1)
                       
 ! generate a grid value   
@@ -385,13 +385,13 @@ end
                     
        do i1=1,4
        do j1=1,4
-        ii=ir-2+i1   
+        ii=ir-2+i1   !es el i de las celdas cerca del objeto?
         jj=jr-2+j1
 
-         drx = 1. + cos((xt*hxi - float(ii-1))*pd2)
+         drx = 1. + cos((xt*hxi - float(ii-1))*pd2)   !parte ec-(2.46)
          dry = 1. + cos((yt*hyi - float(jj-1))*pd2)
 
-        tmp1(ii+1,jj+1)=tmp1(ii+1,jj+1)+rx*drx*dry*cnstx
+        tmp1(ii+1,jj+1)=tmp1(ii+1,jj+1)+rx*drx*dry*cnstx !toda ec.(2.43)
         tmp2(ii+1,jj+1)=tmp2(ii+1,jj+1)+ry*drx*dry*cnsty
        enddo
        enddo

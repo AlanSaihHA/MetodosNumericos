@@ -429,7 +429,7 @@ CLOSE(3)
     !Escribiendo vorticidad 
     CALL vorticity(omega,uc,vc,nx,ny,x,y)     
     CALL WriteVorticity('datos/omega',it,omega,xc,yc,nx,ny)
-
+    call WriteParaview('datos/paraview',it,uc,vc,xc,yc,nx,ny)
   END IF
   enddo !ciclo temporal
 
@@ -752,5 +752,31 @@ open(21,file=Filename(1:len_trim(Filename)))
 close(21)
 End Subroutine
 
+!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+Subroutine WriteParaview(name,kx,uc,vc,xc,yc,nx,ny)
+!Subroutine WriteVectorField(Name,kx,uc,vc,xc,yc,nx,ny)
+integer i,j,nx,ny, kx
+real*4 uc(0:nx+1,0:ny+1),vc(0:nx+1,0:ny+1),xc(0:nx+1),yc(0:ny+1)
+character*(*)name
+character*50 txt,Filename
 
+write(txt,'(i6)')kx
+txt=ADJUSTL(txt)
+Filename=name//txt(1:len_trim(txt))//".dat"
+
+open(113,file=Filename(1:len_trim(Filename)))                !Aquì se nombre el archivo en donde se escribiran los datos
+
+write(113,*) 'TITLE= "TESTPLOT" '
+write(113,*) 'VARIABLES="x","y","u","v","magu" '              !Se dan coordenadas x,y, ademas la componente fx y fy. Ademas la magnitu de esas componentes
+write(113,*) 'ZONE T="1", I=',nx+1,', J=',ny+1
+
+do j=0, ny              !Se evalua para cada coordenada (x,y). Primerotodas las equis con cada ye. Se pasa a la siguiente equis y se vuelve a repetir
+do i=0, nx 
+	write(113,*) xc(i),yc(j),uc(i,j),vc(i,j),sqrt(uc(i,j)*uc(i,j)+vc(i,j)*vc(i,j))          !Evaluacion de cada dato
+enddo 
+enddo
+
+close(1)
+
+End Subroutine
 
