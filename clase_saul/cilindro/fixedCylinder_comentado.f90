@@ -350,7 +350,7 @@ end
       sc=0.5d0
       pi=4.0d0*ATAN(1.0d0)
       pd2=0.5d0*pi  !parte de ec.(2.46), (1/4h)*(1+cos(pi*r/2h)), y pd2 = pi/2
-      cnstx=(.25d0*hxi)**2  !¿? viene de ec. 2.46 (1/4h), alcuadrado porque es x y y
+      cnstx=(.25d0*hxi)**2  ! viene de ec. 2.46 (1/4h), alcuadrado porque es x y y
       cnsty=(.25d0*hyi)**2
 
       do i=1,nxp2+2
