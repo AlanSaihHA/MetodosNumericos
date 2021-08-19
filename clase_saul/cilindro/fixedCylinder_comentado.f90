@@ -129,7 +129,7 @@
                 
       fxl=xl     !se iguala longitud en x
       fyl=yl     !se iguala longitud en y
-      xmv=30.0d0   !por qué es 30?
+      xmv=30.0d0   !por qué es 30? se pone para que den bien los mod(a,b)
       mv=30
 
       call gsetup(ut,vt,ro,p,tmp1,tmp2,tmp3,nxp2,nyp2)  !inicia las variables, las coloca en cero
@@ -290,7 +290,7 @@ end program
       return
       end
 !-----------------------------------------------------------------------!        
-subroutine gifield(color,r,nxp2,nyp2)
+subroutine gifield(color,r,nxp2,nyp2)  !se crea el campo indicador
 	use flprop
 
 	implicit none
@@ -299,7 +299,7 @@ subroutine gifield(color,r,nxp2,nyp2)
  
 	do i=1,nxp2
 	do j=1,nyp2
-	color(i,j)= (Ifi1*(r(i,j)-r2)-Ifi2*(r(i,j)-r1) )/(r1-r2)
+	color(i,j)= (Ifi1*(r(i,j)-r2)-Ifi2*(r(i,j)-r1) )/(r1-r2)   !se crea el campo indicador a traves de la densidad
 
 	if (color(i,j) .gt. Ifi2) then
 		color(i,j)=Ifi2
@@ -373,11 +373,11 @@ end
        y1=p1y-p0y  !Es delta L en Ec. 2.48
 
 ! calculate components of n.dA
-      rx=-y1 *elprop(k,1)  !¿? normal en Ec. 2.48 por delta I
-      ry= x1 *elprop(k,1)
+      rx=-y1 *elprop(k,1)  !Es parte de Ec. 2.48 sin func. peso
+      ry= x1 *elprop(k,1)  !DeltaI*normal*DeltaL
                       
 ! generate a grid value   
-       xt=dmod((xc+0.5d0/hxi)+xmv*xl,xl)
+       xt=dmod((xc+0.5d0/hxi)+xmv*xl,xl)   !Se le agrega xmv para hacer mas grande el valor
        yt=dmod((yc+0.5d0/hyi)+xmv*yl,yl)
 
        ir=1+int(nx*xt/xl)  !¿viene de ec. 2.41?
@@ -400,7 +400,7 @@ end
       enddo   
 
 ! correct boundaries:
-      call gbd1(tmp1,tmp2,nxp2,nyp2)
+      call gbd1(tmp1,tmp2,nxp2,nyp2)  ! Se utiliza para especificar las fronteras
 
        do i=1,nxp2   !Se coloca el arreglo de la divergencia. ec.2.49
        do j=1,nyp2
@@ -417,8 +417,8 @@ end
 
 ! set connection
       node=0
-       do 100 i=2,nxp1
-       do 100 j=2,nyp1
+       do 100 i=2,nxp1   ! Aqui se busca donde hay gradientes importantes
+       do 100 j=2,nyp1   ! y se resuelve solo en ese dominio disminuido
          cc=0.0d0
          do 105 io=1,3
          do 105 jo=1,3
@@ -471,7 +471,7 @@ end
       return
       end
 !-----------------------------------------------------------------------!
-      subroutine gbd1(tmp1,tmp2,nxp2,nyp2)
+      subroutine gbd1(tmp1,tmp2,nxp2,nyp2)  !se utiliza para dar cond. de frontera, si rebota o es periodica
 	  use grid
 
 	  implicit none
@@ -553,13 +553,13 @@ subroutine finit(nfronts,fp,ip,pt,icp,ine,ptcon,elcon,bptcon,belcon,elprop,maxpt
       pi=4.*ATAN(1.)
 
 
-      nfronts=1     !¿?
+      nfronts=1     !numero de fronteras
       
-      num_srce=0   !¿?
-      nptot=0       !¿?   ! numero de puntos totales, si hubiera mas de un objeto
-      netot=0           !numero de elementos totales, si hubiera mas de un objeto
+      num_srce=0   ! numero de fuentes
+      nptot=0  ! numero de puntos totales en conjunto de todos los objetos inmersos
+      netot=0  ! numero de elementos totales, se encuentran despues del sig ciclo
       do is=1,nfronts
-      radin=0.5d0
+      radin=0.5d0   !Este coidog es para objetos del mismo tamanyo, cilindros con radio=0.5
       prop1=r1-r2
       prop2=0.0d0
           fp(is,1)=radin
@@ -724,9 +724,9 @@ call Mesh1D(xc,x,0.d0,xl,nx1)
 call Mesh1D(yc,y,0.d0,yl,ny1)
 
 
-nminx=int((xcc-1.0d0)/dx)
-if (nminx < 1)nminx=1
-nmaxx=int((xcc+1.0d0)/dx)
+nminx=int((xcc-1.0d0)/dx)   !se calcula donde importa hacer el calculo
+if (nminx < 1)nminx=1       ! de las velocidades, se restringe el dominio
+nmaxx=int((xcc+1.0d0)/dx)    !por eso se hace desde nmin y nmax en lineas 738 y 958
 if (nmaxx > nx1+1)nmaxx=nx1+1
 nminy=int((ycc-1.0d0)/dy)
 if (nminy < 1)nminy=1
@@ -737,8 +737,8 @@ ms=0.0d0
 Im=0.0d0
 do i=nminx,nmaxx
 do j=nminy,nmaxy
-Im=Im+dx*dy*((xc(i)-xcc)**2.0d0+(yc(j)-ycc)**2.0d0)*(1.0d0-color(i,j))*r(i,j)
-ms=ms+dx*dy*(1.0d0-color(i,j))*r(i,j)
+Im=Im+dx*dy*((xc(i)-xcc)**2.0d0+(yc(j)-ycc)**2.0d0)*(1.0d0-color(i,j))*r(i,j)   !momento de inercia del solido, para un circulo en este caso
+ms=ms+dx*dy*(1.0d0-color(i,j))*r(i,j)             !masa del solido
 enddo
 enddo
 !ms=0.5d0**2*pi*r1
@@ -957,8 +957,8 @@ vso=0.0d0
 
 do i=nminx,nmaxx
 	do j=nminy,nmaxy
-		u1(i,j)=0.5d0*(color(i,j)+color(i+1,j))*u1(i,j)+(1.0d0-0.5d0*(color(i,j)+color(i+1,j)))*uso(i,j)
-		v1(i,j)=0.5d0*(color(i,j)+color(i,j+1))*v1(i,j)+(1.0d0-0.5d0*(color(i,j)+color(i,j+1)))*vso(i,j)
+		u1(i,j)=0.5d0*(color(i,j)+color(i+1,j))*u1(i,j)+(1.0d0-0.5d0*(color(i,j)+color(i+1,j)))*uso(i,j)  !Cuando se está en el fluido color vale 1 
+		v1(i,j)=0.5d0*(color(i,j)+color(i,j+1))*v1(i,j)+(1.0d0-0.5d0*(color(i,j)+color(i,j+1)))*vso(i,j)  !Se toma vel del fluido o solido dependiendo donde se esté
 	enddo
 enddo
 
@@ -1242,7 +1242,7 @@ subroutine printout(pt,ptcon,iptmp,istore,icp,elcon,				&
     zzero=0.0d0
     k=ffp
     do kk=1,np
-        xx=pt(k,1)
+        xx=pt(k,1)   !se reordenan los puntos para leer en paraview
         pt(k,1)=xx-xl*floor(xx/xl)
         yy=pt(k,2)
         pt(k,2)=yy-yl*floor(yy/yl)          
